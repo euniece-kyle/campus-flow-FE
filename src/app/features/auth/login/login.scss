@@ -1,0 +1,147 @@
+$maroon: #800000;       // For the text and input borders
+$gold: #F2A700;         // For the main button and logo
+$gold-shadow: #d98a00;   // Darker orange for the button's 3D base
+$cream: #fff9f0;        // The cream background color from both images
+$blue-link: #0076a3;    // Standard hyperlink blue
+
+.auth-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: $cream; // The global cream background
+  margin: 0;
+  overflow: hidden; // Prevents accidental scrollbars
+}
+
+.hero-section {
+  flex: 4;
+  /* Reduced top padding and set justify-content to flex-start 
+     to pull everything to the top */
+  padding: 40px 80px; 
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; // Aligns content to the top
+  color: $maroon;
+  position: relative;
+  
+  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)), 
+              url('https://images.pexels.com/photos/5234743/pexels-photo-5234743.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'); 
+  background-size: cover;
+  background-position: center;
+
+  .brand {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    /* Reduced bottom margin to bring the quote closer to the logo */
+    margin-bottom: 40px; 
+    
+    img { height: 40px; width: 40px; } 
+    span { color: $gold; font-weight: bold; font-size: 1.6rem; }
+  }
+
+  .quote {
+    position: relative;
+    z-index: 2;
+    font-size: 2.2rem;
+    max-width: 420px;
+    line-height: 1.3;
+    font-weight: bold;
+    font-style: italic;
+    text-shadow: 1px 1px 4px rgba(255, 255, 255, 0.8);
+    
+    /* Optional: extra negative margin if you want it even higher */
+    margin-top: 0; 
+  }
+}
+
+/* RIGHT SIDE (Form) */
+.form-section {
+  flex: 6; // Takes 60% of the width
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+
+  .auth-card {
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+
+    h2 {
+      color: $maroon;
+      font-size: 2.1rem;
+      margin-bottom: 40px;
+      font-weight: bold;
+      span { color: $gold; } // Gold "CampusFlow"
+    }
+  }
+}
+
+/* INPUT FIELD STYLES (Matching Maroon Border) */
+.input-group {
+  margin-bottom: 25px;
+  text-align: left;
+
+  input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 1.5px solid $maroon; // Standard maroon border
+    border-radius: 12px; // Rounded corners from button image
+    background: white; // Clean white background inside inputs
+    font-size: 1.05rem;
+    outline: none; // Hides default blue focus ring
+
+    &::placeholder { color: $maroon; opacity: 0.6; } // Maroon placeholder
+  }
+
+  .helper-links {
+    text-align: right;
+    margin-top: 10px;
+    a { font-size: 0.9rem; color: $blue-link; text-decoration: none; font-weight: 500; }
+  }
+}
+
+/* THE 3D LOG IN BUTTON (Matches 'Done' image perfectly) */
+.btn-primary {
+  width: 100%;
+  padding: 14px 20px;
+  background: $gold; // The main gold/orange
+  color: white; // White text like 'Done'
+  border: none;
+  border-radius: 12px; // Very rounded corners from button image
+  font-weight: bold;
+  font-size: 1.15rem;
+  cursor: pointer;
+  text-transform: uppercase; // "LOG IN" in all caps
+  letter-spacing: 1px;
+  
+  // The bottom solid lip/shadow from your image
+  box-shadow: 0 5px 0 $gold-shadow; 
+  transition: all 0.1s ease;
+
+  // Small interaction: pushes down when clicked
+  &:active {
+    box-shadow: 0 2px 0 $gold-shadow;
+    transform: translateY(3px);
+  }
+
+  &:hover {
+    filter: brightness(1.05); // Slight glow
+  }
+}
+
+/* REGISTER HERE FOOTER */
+.switch-auth {
+  margin-top: 30px;
+  font-size: 0.9rem;
+  color: #333; // Neutral color for "No account yet?"
+
+  a { 
+    color: $blue-link; 
+    font-weight: bold; 
+    text-decoration: none; 
+  }
+}
