@@ -30,18 +30,30 @@ $blue-link: #0076a3;    // Standard hyperlink blue
   background-position: center;
 
   .brand {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    /* Reduced bottom margin to bring the quote closer to the logo */
-    margin-bottom: 40px; 
+  display: flex;         /* Puts logo and text on the same line */
+  align-items: center;   /* Centers them vertically against each other */
+  gap: 15px;             /* Space between the logo and text */
+  margin-bottom: 40px;   /* Pushes the quote down */
+
+  img {
+    /* --- MAKE THIS MUCH LARGER --- */
+    width: 65px;         /* Try 65px. If you want it even bigger, increase this number */
+    height: auto;
+    object-fit: contain;
+    display: block;
     
-    img { height: 40px; width: 40px; } 
-    span { color: $gold; font-weight: bold; font-size: 1.6rem; }
+    /* Manual nudge if the text looks higher or lower than the logo */
+    transform: translateY(2px); 
   }
 
+  .brand-name {
+    color: #F4A100;      /* Keep your orange color */
+    font-weight: bold;
+    font-size: 2.2rem;   /* Larger font for a more professional header */
+    margin: 0;
+    line-height: 1;      /* Crucial for alignment */
+  }
+}
   .quote {
     position: relative;
     z-index: 2;

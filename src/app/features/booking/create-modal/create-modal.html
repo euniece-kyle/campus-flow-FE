@@ -1,1 +1,66 @@
-<p>create-modal works!</p>
+<div class="modal-container">
+  <h2 class="modal-title">Create New <span class="highlight">Booking</span></h2>
+
+  <div class="toggle-group">
+    <button [class.active]="selectedType === 'One-Time'" (click)="selectedType = 'One-Time'">
+      <span class="icon">📅</span> One-Time
+    </button>
+    <button [class.active]="selectedType === 'Recurring'" (click)="selectedType = 'Recurring'">
+      <span class="icon">🔄</span> Recurring
+    </button>
+  </div>
+
+  <div class="form-body">
+    <div class="form-row">
+      <span class="label">Date:</span>
+      <span class="value">{{ data.date | date:'EEEE, MMMM d, yyyy' }}</span>
+    </div>
+
+    <div class="form-row">
+      <span class="label">Room:</span>
+      <span class="value">{{ data.room }}</span>
+    </div>
+
+    <div class="form-row">
+      <span class="label">Period:</span>
+      <select [(ngModel)]="data.period" class="custom-select">
+        <option *ngFor="let p of periods" [value]="p.label">
+          {{ p.label }} ({{ p.time }})
+        </option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <span class="label">Department:</span>
+      <select class="custom-select">
+        <option value="none">(None)</option>
+        <option value="it">IT Department</option>
+        <option value="science">Science Dept</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <span class="label">Booked By:</span>
+      <select class="custom-select">
+        <option value="yuri">Mr. Yuri Hanamichi</option>
+      </select>
+    </div>
+
+    <div *ngIf="selectedType === 'Recurring'" class="recurring-section">
+       <div class="form-row">
+         <span class="label">Starting from...</span>
+         <input type="date" class="custom-input">
+       </div>
+       <div class="form-row">
+         <span class="label">Until...</span>
+         <select class="custom-select">
+           <option>(Ending of session)</option>
+         </select>
+       </div>
+    </div>
+  </div>
+
+  <button class="btn-create" (click)="onCreateBooking()">
+    Create Booking
+  </button>
+</div>

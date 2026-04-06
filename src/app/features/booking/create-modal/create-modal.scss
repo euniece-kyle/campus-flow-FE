@@ -1,0 +1,11 @@
+.form-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 15px;
+
+  .label {
+    width: 120px; // Gives all labels the same width so values align
+    font-weight: bold;
+  }
+}
