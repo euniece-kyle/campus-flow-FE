@@ -8,6 +8,11 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'booking', component: BookingComponent }, // Added the comma here
-  { path: '', redirectTo: 'login', pathMatch: 'full' } // Moved redirect to the end
+  { path: 'booking', component: BookingComponent },
+  
+  // Default route (root) redirects to login
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  
+  // Wildcard route: catch any undefined URL and redirect to login
+  { path: '**', redirectTo: 'login' }
 ];

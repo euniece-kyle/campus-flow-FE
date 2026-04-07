@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CreateModal } from './create-modal/create-modal'; 
+import { Router } from '@angular/router'; 
+import { CreateModal } from './create-modal/create-modal';
 
 @Component({
   selector: 'app-booking',
@@ -14,15 +15,18 @@ import { CreateModal } from './create-modal/create-modal';
 export class BookingComponent {
   // --- UI STATE ---
   selectedBuilding: string = 'WAC Building';
-  selectedDate: Date = new Date(2026, 0, 27); 
+  selectedDate: Date = new Date(2026, 0, 27);
   
-  isModalOpen: boolean = false; 
+  isModalOpen: boolean = false;
   targetRoom: string = '';
-  targetPeriod: string = ''; // Tracks which column was clicked
+  targetPeriod: string = '';
+
+  isViewOpen: boolean = false;
+  selectedBooking: any = null;
+  showCancelConfirm: boolean = false;
 
   // --- DATA STORAGE ---
-  // This "memory" stores bookings so they stay on the grid
-  savedBookings: any[] = []; 
+  savedBookings: any[] = [];
 
   buildings: string[] = ['SAC Building', 'NAC Building', 'WAC Building', 'EAC Building'];
   
@@ -35,41 +39,78 @@ export class BookingComponent {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
+  constructor(private router: Router) {}
+
+  onSignOut() {
+    this.router.navigate(['/login']);
+  }
+
+  // --- HELPERS ---
+  
+  getPeriodTime(label: string | undefined): string {
+    if (!label) return '';
+    const p = this.periods.find(period => period.label === label);
+    return p ? p.time : '';
+  }
+
   get rooms(): string[] {
     const prefix = this.selectedBuilding.split(' ')[0];
     return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
   }
 
-  // --- MODAL & BOOKING METHODS ---
+  // --- MODAL & DRAWER METHODS ---
 
-  /**
-   * Opens the modal. Updated to accept period label for precise booking.
-   */
   openBookingModal(room: string, periodLabel: string) {
-    this.targetRoom = room;
-    this.targetPeriod = periodLabel; 
-    this.isModalOpen = true;
+    const existing = this.getBooking(room, periodLabel);
+
+    if (existing) {
+      // Pass the found booking object to the drawer
+      this.selectedBooking = existing;
+      this.isViewOpen = true; 
+    } else {
+      this.targetRoom = room;
+      this.targetPeriod = periodLabel;
+      this.isModalOpen = true; 
+    }
   }
 
   /**
-   * FIXES TS2339: This catches the data sent from the modal's (create) emitter.
+   * Captures data from the modal, including the new recurring dates.
    */
   handleNewBooking(bookingData: any) {
-    this.savedBookings.push({
+    const newBooking = {
       ...bookingData,
-      // Ensures the booking only shows on the date it was created
-      dateKey: this.selectedDate.toDateString() 
-    });
+      room: this.targetRoom,     
+      period: this.targetPeriod, 
+      dateKey: this.selectedDate.toDateString(),
+      // Ensure the keys match what your create-modal emits
+      startingFrom: bookingData.startingFrom, 
+      until: bookingData.until
+    };
+
+    this.savedBookings.push(newBooking);
     this.isModalOpen = false;
   }
 
-  /**
-   * Checks if a specific cell has a booking. Used by [ngClass] in HTML.
-   */
+  // --- DRAWER ACTIONS ---
+
+  closeView() {
+    this.isViewOpen = false;
+    this.showCancelConfirm = false;
+    this.selectedBooking = null;
+  }
+
+  confirmCancel() {
+    this.savedBookings = this.savedBookings.filter(b => b !== this.selectedBooking);
+    this.closeView();
+  }
+
+  // --- UTILITIES ---
+
   getBooking(room: string, periodLabel: string) {
-    return this.savedBookings.find(b => 
-      b.room === room && 
-      b.period === periodLabel && 
+    return this.savedBookings.find(b =>
+      b.room === room &&
+      b.period === periodLabel &&
       b.dateKey === this.selectedDate.toDateString()
     );
   }
@@ -77,8 +118,6 @@ export class BookingComponent {
   closeModal() {
     this.isModalOpen = false;
   }
-
-  // --- NAVIGATION & DATE METHODS ---
 
   selectBuilding(building: string) {
     this.selectedBuilding = building;

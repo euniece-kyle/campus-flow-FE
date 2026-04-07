@@ -1,46 +1,43 @@
 /* --- MODAL LAYOUT --- */
 .modal-overlay {
-  position: fixed; /* Keeps it in place even if you scroll */
-  top: 0;
-  left: 0;
-  width: 100vw;    /* Full screen width */
-  height: 100vh;   /* Full screen height */
-  background: rgba(0, 0, 0, 0.5); /* The dimming effect */
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;   /* High number to stay above the grid and sidebar */
-  
-  /* This prevents any mouse interaction with elements behind it */
+  z-index: 1000;
   pointer-events: auto; 
 }
 
 .modal-content {
-  background: #FFF9F1; /* Off-white color from screenshot */
+  background: #FFF9F1; 
   padding: 40px;
-  border-radius: 8px;
-  width: 500px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  border-radius: 12px;
+  width: 480px; 
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
 }
 
 /* --- TITLE --- */
 .title {
   font-family: 'Poppins', sans-serif;
+  color: maroon;
   margin-top: 0;
-  margin-bottom: 25px;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
   
   .highlight-text {
-    color: #F8BB17; /* The orange/yellow text color */
+    color: #F8BB17;
   }
 }
 
 /* --- TABS --- */
-/* --- TABS --- */
 .booking-tabs {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 30px;
+  gap: 15px;
+  margin-bottom: 35px;
 
   .tab-btn {
     display: flex;
@@ -48,24 +45,20 @@
     gap: 8px;
     background: transparent;
     border: none;
-    padding: 6px 14px;
-    border-radius: 4px;
+    padding: 8px 16px;
+    border-radius: 6px;
     cursor: pointer;
-    font-weight: 500;
-    color: #333;
+    font-weight: 600;
+    color: #444;
     transition: 0.2s;
 
-    .icon {
-      font-size: 16px;
-    }
+    .icon { font-size: 18px; }
 
-    /* BLUE style when One-Time is clicked */
     &.active-one-time {
       background-color: #2D5F7C; 
       color: white;
     }
 
-    /* ORANGE/SALMON style when Recurring is clicked */
     &.active-recurring {
       background-color: #E68D76; 
       color: white;
@@ -74,74 +67,82 @@
 
   .divider {
     width: 1px;
-    height: 18px;
-    background-color: #CCC;
+    height: 30px;
+    background-color: #BDBDBD;
   }
 }
 
-/* --- CREATE BUTTON (Yellow/Orange) --- */
-.btn-create {
-  background-color: #F8BB17;
-  color: white;
-  border: none;
-  padding: 14px 0;
-  width: 280px; /* Adjust width to match screenshot */
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  
-  &:hover {
-    background-color: #E0A815;
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-/* Ensure background click-through is blocked */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
 /* --- FORM GRID --- */
 .form-grid {
   display: grid;
-  grid-template-columns: 140px 1fr; /* Two columns */
-  gap: 20px;
+  grid-template-columns: 130px 1fr; 
+  gap: 18px;
   align-items: center;
-  font-size: 14px;
   
   label {
-    font-weight: bold;
-    color: #333;
+    font-weight: 500;
+    color: #000;
+    font-size: 15px;
   }
   
   .form-value {
-    color: #555;
+    color: #333;
+    font-size: 15px;
+    position: relative; 
+
+    &.text-only {
+      padding-left: 2px;
+    }
   }
 }
 
-/* --- DROPDOWNS --- */
-.custom-select {
+/* --- INPUTS & DROPDOWNS --- */
+.dropdown-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.native-look {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #AAA;
+  height: 40px; // Explicit height to match everything
+  padding: 10px 12px;
+  border: 1px solid #767676; 
   border-radius: 4px;
   background: white;
-  appearance: none; /* Removes native arrow */
-  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.3c0%204.8%201.8%209.1%205.4%2012.7l128%20128c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095a17.6%2017.6%200%200%200%205.4-12.7c0-5-1.8-9.3-5.4-12.7z%22%2F%3E%3C%2Fsvg%3E');
-  background-repeat: no-repeat;
-  background-position: right 10px top 50%;
-  background-size: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  color: #333;
+
+  /* Standard appearance for select boxes */
+  appearance: none; 
+  -webkit-appearance: none;
+
+  &:focus {
+    border-color: #F8BB17;
+  }
+}
+
+/* Specific styling for the numeric Date Input to match the select boxes */
+input[type="date"].native-look {
+  appearance: listbox; // Forces standard boxed appearance in many browsers
+  -webkit-appearance: listbox;
+  
+  /* Styling the native calendar icon */
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.8;
+  }
+}
+
+.arrow-icon {
+  position: absolute;
+  right: 12px;
+  font-size: 10px;
+  color: #000;
+  pointer-events: none; 
 }
 
 /* --- CREATE BUTTON --- */
@@ -152,17 +153,18 @@
 }
 
 .btn-create {
-  background-color: #F8BB17; /* The orange/yellow color */
+  background-color: #F8BB17;
   color: white;
   border: none;
-  padding: 12px 60px;
-  font-size: 16px;
+  padding: 14px 0;
+  width: 320px; 
+  font-size: 18px;
   font-weight: bold;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   
   &:hover {
-    background-color: #D9A414; /* Darker orange on hover */
+    background-color: #E0A815;
   }
 }

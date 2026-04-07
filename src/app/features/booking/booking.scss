@@ -1,55 +1,170 @@
+// --- VARIABLES ---
 $maroon: #4a0000;
 $red-banner: #8b0000;
 $blue-tab: #326284;
 $yellow-tab: #f5a81c;
-// New color variables to match your high-fidelity design
 $one-time-blue: #2D5F7C;
 $recurring-salmon: #E68D76;
+$drawer-bg: #fffcf8; 
+$blue-link: #326284;
 
 .layout { display: flex; height: 100vh; font-family: sans-serif; background: #fffcf8; }
 
+// --- SIDEBAR ---
 .sidebar {
   width: 240px; background: $maroon; color: white; display: flex; flex-direction: column;
-  .brand { 
-    padding: 20px; 
-    background: #700000; 
-    display: flex; 
-    align-items: center; 
-    gap: 8px; 
-
+  
+  .brand {
+    padding: 20px; background: #700000; display: flex; align-items: center; gap: 8px;
     .logo-container {
-      width: 50px; 
-      height: 50px; 
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      .logo { 
-        width: 100%; 
-        height: 100%; 
-        object-fit: contain; 
-        display: block; 
-      }
+      width: 50px; height: 50px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      .logo { width: 100%; height: 100%; object-fit: contain; display: block; }
     }
-
-    .brand-text { 
-      color: #ffcc00; 
-      font-weight: bold; 
-      font-size: 1.4rem;
-      margin: 0; 
-    }
+    .brand-text { color: #ffcc00; font-weight: bold; font-size: 1.4rem; margin: 0; }
   }
-  .nav-item { padding: 15px 20px; display: flex; justify-content: space-between; cursor: pointer;
+
+  .nav-item { 
+    padding: 15px 20px; display: flex; justify-content: space-between; cursor: pointer;
+    transition: background 0.2s ease;
     &.active { background: $yellow-tab; }
+    &:hover:not(.active) { background: rgba(255, 255, 255, 0.1); }
   }
-  .sign-out { margin-top: auto; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1);
-    .sign-out-content { display: flex; align-items: center; gap: 10px; }
+
+  // UPDATED SIGN OUT SECTION
+  .sign-out { 
+    margin-top: auto; 
+    padding: 20px; 
+    border-top: 1px solid rgba(255,255,255,0.1);
+    transition: background-color 0.3s ease; // Smooth transition for hover
+    cursor: pointer;
+
+    &:hover { 
+      background-color: #350000; // Darkish maroon hover effect
+    }
+
+    .sign-out-content { 
+      display: flex; align-items: center; gap: 10px; 
+      .exit-icon { font-size: 1.2rem; }
+      .sign-out-text { font-weight: 500; }
+    }
   }
 }
 
-.main { flex: 1; padding: 30px; }
+.main { flex: 1; padding: 30px; overflow-y: auto; }
 
+// --- GRID & BOXES ---
+.booking-grid {
+  width: 100%; border-spacing: 12px; border-collapse: separate;
+  th { font-size: 0.75rem; font-weight: normal; color: #444; }
+  .room-label { font-weight: bold; width: 80px; }
+
+  .white-box {
+    height: 70px; border: 1px solid #ccc; background: white; border-radius: 6px;
+    transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 10px; font-size: 0.85rem; color: #333;
+    
+    &:hover {
+      border-color: $yellow-tab; background-color: rgba($yellow-tab, 0.05);
+      box-shadow: inset 0 0 0 2px $yellow-tab; cursor: pointer;
+    }
+
+    &.booked-one-time {
+      background-color: $one-time-blue !important; color: white !important;
+      border: none; font-weight: 500;
+    }
+
+    &.booked-recurring {
+      background-color: $recurring-salmon !important; color: white !important;
+      border: none; font-weight: 500;
+    }
+  }
+}
+
+// --- DRAWER (BOOKING INFORMATION) ---
+.drawer-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.2); z-index: 1000;
+  display: flex; justify-content: flex-end;
+}
+
+.drawer-content {
+  background: $drawer-bg; width: 420px; height: 100%; padding: 40px;
+  box-shadow: -5px 0 25px rgba(0,0,0,0.1); position: relative;
+
+  .close-x-btn {
+    position: absolute; top: 20px; right: 20px; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  .drawer-title {
+    font-size: 28px; font-weight: bold; margin-bottom: 5px; color: maroon;
+    .highlight { color: $yellow-tab; }
+  }
+
+  .room-header { color: $maroon; font-size: 22px; margin-bottom: 30px; }
+
+  .info-table {
+    background: #fdf2e4; border-radius: 8px; overflow: hidden;
+    .info-row {
+      display: flex; justify-content: space-between; padding: 15px 20px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      &.gray-bg { background: rgba(0,0,0,0.02); } // Added for the striped effect in your drawer
+      &:last-child { border-bottom: none; }
+      .label { font-weight: bold; color: #333; }
+      .value { color: #555; }
+    }
+  }
+
+  .cancel-action-container {
+    position: relative; 
+    margin-top: 40px; 
+    display: block;
+  }
+
+  .btn-cancel-action {
+    background: #c62828; color: white; border: none;
+    padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer;
+    transition: background 0.2s;
+    &:hover { background: #a81e1e; }
+  }
+}
+
+// --- CANCELLATION POPUP ---
+.confirm-popup-card {
+  position: absolute; 
+  bottom: 0; 
+  left: -240px; // Fixed typo from '240pxpx'
+  width: 230px; // Fixed typo from '230pxpx'
+  min-height: 140px;
+  background: white; 
+  border: 1px solid $recurring-salmon; 
+  padding: 15px !important;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+  text-align: center; 
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .confirm-msg { 
+    color: $maroon; font-weight: 700; font-size: 0.95rem; 
+    margin-bottom: 15px; line-height: 1.2; display: block; width: 100%;
+  }
+  
+  .btn-confirm-yes {
+    background: $yellow-tab; color: white; border: none; 
+    width: 100%; padding: 10px; border-radius: 4px; 
+    font-weight: 700; font-size: 0.85rem; cursor: pointer; margin-bottom: 12px; 
+  }
+
+  .no-keep-link span {
+    color: $blue-link; text-decoration: underline; 
+    cursor: pointer; font-size: 0.85rem; font-weight: 500;
+  }
+}
+
+// --- CALENDAR & TABS ---
 .calendar-box {
   position: relative; display: inline-flex; align-items: center; gap: 40px;
   padding: 8px 15px; border: 1px solid #ccc; background: white; border-radius: 4px;
@@ -57,7 +172,7 @@ $recurring-salmon: #E68D76;
 }
 
 .red-header {
-  background: $red-banner; color: white; padding: 12px 20px; display: flex; 
+  background: $red-banner; color: white; padding: 12px 20px; display: flex;
   justify-content: space-between; margin: 20px 0; border-radius: 4px;
   button { background: none; border: none; color: white; font-weight: bold; cursor: pointer; }
 }
@@ -69,63 +184,8 @@ $recurring-salmon: #E68D76;
   .inactive-yellow { background: $yellow-tab; }
 }
 
-.booking-grid {
-  width: 100%; border-spacing: 12px; border-collapse: separate;
-  th { font-size: 0.75rem; font-weight: normal; color: #444; }
-  .room-label { font-weight: bold; width: 80px; }
-
-  .white-box {
-    height: 70px; // Slightly taller looks better with names
-    border: 1px solid #ccc; 
-    background: white; 
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    
-    // Centers the teacher name perfectly
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 10px;
-    font-size: 0.85rem;
-    color: #333;
-    
-    // THE YELLOW HOVER
-    &:hover {
-      border-color: $yellow-tab;
-      background-color: rgba($yellow-tab, 0.05);
-      box-shadow: inset 0 0 0 2px $yellow-tab;
-      cursor: pointer;
-    }
-
-    // BLUE Background for One-Time bookings
-    &.booked-one-time {
-      background-color: $one-time-blue !important;
-      color: white !important;
-      border: none;
-      font-weight: 500;
-    }
-
-    // SALMON Background for Recurring bookings
-    &.booked-recurring {
-      background-color: $recurring-salmon !important;
-      color: white !important;
-      border: none;
-      font-weight: 500;
-    }
-  }
-}
-
+// --- MODAL WRAPPERS ---
 app-create-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 99999 !important;
-  pointer-events: none; 
-}
-
-.modal-overlay {
-  pointer-events: auto !important;
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 99999 !important; pointer-events: none;
 }

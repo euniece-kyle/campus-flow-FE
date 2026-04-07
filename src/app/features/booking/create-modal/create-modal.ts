@@ -1,8 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-// This tells TypeScript exactly what a "Period" looks like
 interface Period {
   label: string;
   time: string;
@@ -15,9 +14,9 @@ interface Period {
   templateUrl: './create-modal.html',
   styleUrls: ['./create-modal.scss'],
 })
-export class CreateModal {
+export class CreateModal implements OnInit {
   @Input() roomName: string = '';
-  @Input() selectedDate: string = '';
+  @Input() selectedDate: string = ''; 
   
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
@@ -28,11 +27,12 @@ export class CreateModal {
     period: '',
     department: '(None)',
     bookedBy: 'Mr. Yuri Hanamichi',
-    startDate: '',
-    untilDate: 'Ending of session'
+    startDate: '',         
+    untilDate: 'Ending of session',
+    customUntilDate: '',    
+    showDatePicker: false   
   };
 
-  // FIXED: Every object now has a 'time' property
   periods: Period[] = [
     { label: 'Period 1', time: '9:00am - 10:30am' },
     { label: 'Period 2', time: '10:30am - 12:00nn' },
@@ -43,16 +43,44 @@ export class CreateModal {
   ];
 
   departments = ['(None)', 'IT', 'Engineering', 'Science', 'Mathematics'];
-  
-  staff = [
-    'Mr. Yuri Hanamichi', 
-    'Mr. Gojo Satoru', 
-    'Ms. Makima', 
-    'Mr. Kakashi Hatake'
-  ];
+  staff = ['Mr. Yuri Hanamichi', 'Mr. Gojo Satoru', 'Ms. Makima', 'Mr. Kakashi Hatake'];
 
-  selectType(type: 'One-Time' | 'Recurring') {
-    this.selectedType = type;
+  ngOnInit() {
+    const d = new Date(this.selectedDate);
+    let finalDate = d;
+    if (isNaN(d.getTime())) {
+       finalDate = new Date(); 
+    }
+
+    const isoDate = this.toISODate(finalDate);
+    this.data.startDate = isoDate;
+    this.data.customUntilDate = isoDate;
+  }
+
+  toISODate(date: Date): string {
+    const offset = date.getTimezoneOffset();
+    const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+    return adjustedDate.toISOString().split('T')[0];
+  }
+
+  formatToWords(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    
+    const options: Intl.DateTimeFormatOptions = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+    return d.toLocaleDateString('en-US', options);
+  }
+
+  onUntilChange() {
+    if (this.data.untilDate === 'Pick Date') {
+      this.data.showDatePicker = true;
+    }
   }
 
   closeModal() {
@@ -60,11 +88,23 @@ export class CreateModal {
   }
 
   onCreateBooking() {
+    // Determine the "Until" value based on whether a custom date was picked
+    const finalUntil = this.data.showDatePicker 
+      ? this.formatToWords(this.data.customUntilDate) 
+      : this.data.untilDate;
+    
+    // Construct the payload to match the BookingComponent expectation
     const bookingPayload = {
       room: this.roomName,
       type: this.selectedType,
-      ...this.data 
+      bookedBy: this.data.bookedBy,
+      period: this.data.period,
+      department: this.data.department,
+      // Map the dates to the keys the drawer uses: startingFrom and until
+      startingFrom: this.formatToWords(this.data.startDate),
+      until: finalUntil
     };
+    
     this.create.emit(bookingPayload);
     this.closeModal();
   }
