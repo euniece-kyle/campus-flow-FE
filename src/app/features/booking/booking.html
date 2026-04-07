@@ -5,7 +5,9 @@
         <img src="/assets/cf-logo.png" alt="CampusFlow Logo" class="logo">
       </div>
       <span class="brand-text">CampusFlow</span>
-    </div> <nav class="nav">
+    </div> 
+    
+    <nav class="nav">
       <div class="nav-item active">Booking</div>
       <div class="nav-item">Department <span class="arrow">></span></div>
       <div class="nav-item">Profile <span class="arrow">></span></div>
@@ -56,10 +58,28 @@
         <tr *ngFor="let room of rooms">
           <td class="room-label">{{ room }}</td>
           <td *ngFor="let p of periods">
-            <div class="white-box"></div>
+            <div class="white-box" 
+                 (click)="openBookingModal(room, p.label)"
+                 [ngClass]="{
+                   'booked-one-time': getBooking(room, p.label)?.type === 'One-Time',
+                   'booked-recurring': getBooking(room, p.label)?.type === 'Recurring'
+                 }">
+              
+              <span class="teacher-name" *ngIf="getBooking(room, p.label)">
+                {{ getBooking(room, p.label).bookedBy }}
+              </span>
+            </div>
           </td>
         </tr>
       </tbody>
     </table>
   </main>
 </div>
+
+<app-create-modal 
+  *ngIf="isModalOpen" 
+  [roomName]="targetRoom"
+  [selectedDate]="(selectedDate | date:'EEEE, MMMM d, yyyy') ?? ''"
+  (close)="closeModal()"
+  (create)="handleNewBooking($event)">
+</app-create-modal>

@@ -1,7 +1,7 @@
 <div class="auth-container">
   <div class="hero-section">
     <div class="brand">
-   <img src="/assets/cf-logo.png" alt="Logo">
+      <img src="/assets/cf-logo.png" alt="Logo">
       <span class="brand-name">CampusFlow</span>
     </div>
     <p class="quote">“Your Academic Community, All in One Place.”</p>
@@ -11,13 +11,23 @@
     <div class="auth-card">
       <h2>Welcome back to <span>CampusFlow</span></h2>
       
-      <form>
+      <form (ngSubmit)="onLogin()">
         <div class="input-group">
-          <input type="text" placeholder="Enter Username" required>
+          <input 
+            type="text" 
+            name="username"
+            [(ngModel)]="email" 
+            placeholder="Enter Username" 
+            required>
         </div>
         
         <div class="input-group">
-          <input type="password" placeholder="Enter Password" required>
+          <input 
+            type="password" 
+            name="password"
+            [(ngModel)]="password" 
+            placeholder="Enter Password" 
+            required>
           <div class="helper-links">
             <a routerLink="/forgot-password">Forgot Password?</a>
           </div>

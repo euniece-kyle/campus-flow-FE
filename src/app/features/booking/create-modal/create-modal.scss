@@ -1,11 +1,168 @@
-.form-row {
+/* --- MODAL LAYOUT --- */
+.modal-overlay {
+  position: fixed; /* Keeps it in place even if you scroll */
+  top: 0;
+  left: 0;
+  width: 100vw;    /* Full screen width */
+  height: 100vh;   /* Full screen height */
+  background: rgba(0, 0, 0, 0.5); /* The dimming effect */
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 15px;
+  z-index: 1000;   /* High number to stay above the grid and sidebar */
+  
+  /* This prevents any mouse interaction with elements behind it */
+  pointer-events: auto; 
+}
 
-  .label {
-    width: 120px; // Gives all labels the same width so values align
+.modal-content {
+  background: #FFF9F1; /* Off-white color from screenshot */
+  padding: 40px;
+  border-radius: 8px;
+  width: 500px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* --- TITLE --- */
+.title {
+  font-family: 'Poppins', sans-serif;
+  margin-top: 0;
+  margin-bottom: 25px;
+  
+  .highlight-text {
+    color: #F8BB17; /* The orange/yellow text color */
+  }
+}
+
+/* --- TABS --- */
+/* --- TABS --- */
+.booking-tabs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 30px;
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #333;
+    transition: 0.2s;
+
+    .icon {
+      font-size: 16px;
+    }
+
+    /* BLUE style when One-Time is clicked */
+    &.active-one-time {
+      background-color: #2D5F7C; 
+      color: white;
+    }
+
+    /* ORANGE/SALMON style when Recurring is clicked */
+    &.active-recurring {
+      background-color: #E68D76; 
+      color: white;
+    }
+  }
+
+  .divider {
+    width: 1px;
+    height: 18px;
+    background-color: #CCC;
+  }
+}
+
+/* --- CREATE BUTTON (Yellow/Orange) --- */
+.btn-create {
+  background-color: #F8BB17;
+  color: white;
+  border: none;
+  padding: 14px 0;
+  width: 280px; /* Adjust width to match screenshot */
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  
+  &:hover {
+    background-color: #E0A815;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Ensure background click-through is blocked */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+/* --- FORM GRID --- */
+.form-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr; /* Two columns */
+  gap: 20px;
+  align-items: center;
+  font-size: 14px;
+  
+  label {
     font-weight: bold;
+    color: #333;
+  }
+  
+  .form-value {
+    color: #555;
+  }
+}
+
+/* --- DROPDOWNS --- */
+.custom-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #AAA;
+  border-radius: 4px;
+  background: white;
+  appearance: none; /* Removes native arrow */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.3c0%204.8%201.8%209.1%205.4%2012.7l128%20128c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095a17.6%2017.6%200%200%200%205.4-12.7c0-5-1.8-9.3-5.4-12.7z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: 12px;
+}
+
+/* --- CREATE BUTTON --- */
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.btn-create {
+  background-color: #F8BB17; /* The orange/yellow color */
+  color: white;
+  border: none;
+  padding: 12px 60px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #D9A414; /* Darker orange on hover */
   }
 }

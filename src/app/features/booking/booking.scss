@@ -2,6 +2,9 @@ $maroon: #4a0000;
 $red-banner: #8b0000;
 $blue-tab: #326284;
 $yellow-tab: #f5a81c;
+// New color variables to match your high-fidelity design
+$one-time-blue: #2D5F7C;
+$recurring-salmon: #E68D76;
 
 .layout { display: flex; height: 100vh; font-family: sans-serif; background: #fffcf8; }
 
@@ -12,11 +15,9 @@ $yellow-tab: #f5a81c;
     background: #700000; 
     display: flex; 
     align-items: center; 
-    // FIXED: Decreased gap from 15px to 8px to move text closer
     gap: 8px; 
 
     .logo-container {
-      // FIXED: Made the container even bigger (50px)
       width: 50px; 
       height: 50px; 
       flex-shrink: 0;
@@ -36,7 +37,6 @@ $yellow-tab: #f5a81c;
       color: #ffcc00; 
       font-weight: bold; 
       font-size: 1.4rem;
-      // Optional: Remove any default margin just in case
       margin: 0; 
     }
   }
@@ -73,9 +73,22 @@ $yellow-tab: #f5a81c;
   width: 100%; border-spacing: 12px; border-collapse: separate;
   th { font-size: 0.75rem; font-weight: normal; color: #444; }
   .room-label { font-weight: bold; width: 80px; }
+
   .white-box {
-    height: 60px; border: 1px solid #ccc; background: white; border-radius: 4px;
+    height: 70px; // Slightly taller looks better with names
+    border: 1px solid #ccc; 
+    background: white; 
+    border-radius: 6px;
     transition: all 0.2s ease;
+    
+    // Centers the teacher name perfectly
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    font-size: 0.85rem;
+    color: #333;
     
     // THE YELLOW HOVER
     &:hover {
@@ -84,5 +97,35 @@ $yellow-tab: #f5a81c;
       box-shadow: inset 0 0 0 2px $yellow-tab;
       cursor: pointer;
     }
+
+    // BLUE Background for One-Time bookings
+    &.booked-one-time {
+      background-color: $one-time-blue !important;
+      color: white !important;
+      border: none;
+      font-weight: 500;
+    }
+
+    // SALMON Background for Recurring bookings
+    &.booked-recurring {
+      background-color: $recurring-salmon !important;
+      color: white !important;
+      border: none;
+      font-weight: 500;
+    }
   }
+}
+
+app-create-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999 !important;
+  pointer-events: none; 
+}
+
+.modal-overlay {
+  pointer-events: auto !important;
 }

@@ -1,11 +1,26 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router'; // <--- Add this import
+import { Router, RouterLink } from '@angular/router'; // 1. Added RouterLink here
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterLink], // <--- Add it here! This makes the [routerLink] in HTML work.
+  // 2. Add RouterLink to this array
+  imports: [CommonModule, FormsModule, RouterLink], 
   templateUrl: './login.html',
-  styleUrl: './login.scss'
+  styleUrls: ['./login.scss']
 })
-export class LoginComponent {}
+export class LoginComponent {
+  email = '';
+  password = '';
+
+  constructor(private router: Router) {}
+
+  // This handles the "LOG IN" button
+  onLogin() {
+    if (this.email.trim() && this.password.trim()) {
+      this.router.navigate(['/booking']);
+    }
+  }
+}
