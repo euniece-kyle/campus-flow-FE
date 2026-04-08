@@ -1,3 +1,6 @@
+// 1. Modern Sass Modules
+@use "sass:color";
+
 // --- VARIABLES ---
 $maroon: #4a0000;
 $red-banner: #8b0000;
@@ -11,11 +14,21 @@ $blue-link: #326284;
 .layout { display: flex; height: 100vh; font-family: sans-serif; background: #fffcf8; }
 
 // --- SIDEBAR ---
+// --- SIDEBAR ---
+// --- SIDEBAR ---
 .sidebar {
-  width: 240px; background: $maroon; color: white; display: flex; flex-direction: column;
+  width: 240px; 
+  background: $maroon !important; // Force sidebar to be Maroon
+  color: white; 
+  display: flex; 
+  flex-direction: column;
   
   .brand {
-    padding: 20px; background: #700000; display: flex; align-items: center; gap: 8px;
+    padding: 20px; 
+    background: #700000; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
     .logo-container {
       width: 50px; height: 50px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
       .logo { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -23,33 +36,52 @@ $blue-link: #326284;
     .brand-text { color: #ffcc00; font-weight: bold; font-size: 1.4rem; margin: 0; }
   }
 
-  .nav-item { 
-    padding: 15px 20px; display: flex; justify-content: space-between; cursor: pointer;
-    transition: background 0.2s ease;
-    &.active { background: $yellow-tab; }
-    &:hover:not(.active) { background: rgba(255, 255, 255, 0.1); }
+  .nav {
+    display: flex;
+    flex-direction: column;
+    background: $maroon !important; // Force the list container to be Maroon
+
+    .nav-item { 
+      padding: 15px 20px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      // This is the "Nuclear" fix: 
+      // It forces the background to Maroon and kills any inherited dark colors
+      background-color: $maroon !important; 
+      color: rgba(255, 255, 255, 0.8) !important;
+      
+      &.active { 
+        background-color: $yellow-tab !important; 
+        color: white !important;
+        font-weight: bold;
+      }
+
+      &:hover:not(.active) { 
+        // We use an overlay so it stays Maroon but looks "lit up"
+        background-color: rgba(255, 255, 255, 0.1) !important; 
+        color: white !important;
+      }
+      
+      .arrow { font-size: 1.1rem; }
+    }
   }
 
-  // UPDATED SIGN OUT SECTION
   .sign-out { 
     margin-top: auto; 
     padding: 20px; 
+    background-color: $maroon !important;
     border-top: 1px solid rgba(255,255,255,0.1);
-    transition: background-color 0.3s ease; // Smooth transition for hover
     cursor: pointer;
 
     &:hover { 
-      background-color: #350000; // Darkish maroon hover effect
-    }
-
-    .sign-out-content { 
-      display: flex; align-items: center; gap: 10px; 
-      .exit-icon { font-size: 1.2rem; }
-      .sign-out-text { font-weight: 500; }
+      background-color: color.adjust($maroon, $lightness: -5%) !important; 
     }
   }
 }
-
 .main { flex: 1; padding: 30px; overflow-y: auto; }
 
 // --- GRID & BOXES ---
@@ -97,7 +129,7 @@ $blue-link: #326284;
   }
 
   .drawer-title {
-    font-size: 28px; font-weight: bold; margin-bottom: 5px; color: maroon;
+    font-size: 28px; font-weight: bold; margin-bottom: 5px; color: $maroon;
     .highlight { color: $yellow-tab; }
   }
 
@@ -108,7 +140,7 @@ $blue-link: #326284;
     .info-row {
       display: flex; justify-content: space-between; padding: 15px 20px;
       border-bottom: 1px solid rgba(0,0,0,0.05);
-      &.gray-bg { background: rgba(0,0,0,0.02); } // Added for the striped effect in your drawer
+      &.gray-bg { background: rgba(0,0,0,0.02); } 
       &:last-child { border-bottom: none; }
       .label { font-weight: bold; color: #333; }
       .value { color: #555; }
@@ -133,8 +165,8 @@ $blue-link: #326284;
 .confirm-popup-card {
   position: absolute; 
   bottom: 0; 
-  left: -240px; // Fixed typo from '240pxpx'
-  width: 230px; // Fixed typo from '230pxpx'
+  left: -240px; 
+  width: 230px; 
   min-height: 140px;
   background: white; 
   border: 1px solid $recurring-salmon; 

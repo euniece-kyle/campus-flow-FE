@@ -3,12 +3,14 @@ import { LoginComponent } from './features/auth/login/login';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password';
 import { RegisterComponent } from './features/auth/register/register';
 import { BookingComponent } from './features/booking/booking'; 
+import { DepartmentComponent } from './features/department/department'; // Import the new component
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'booking', component: BookingComponent },
+  { path: 'department', component: DepartmentComponent }, // Add the department path
   
   // Default route (root) redirects to login
   { path: '', redirectTo: 'login', pathMatch: 'full' },

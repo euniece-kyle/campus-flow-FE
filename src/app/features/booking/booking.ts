@@ -1,18 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core'; 
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router'; 
+import { Router, RouterModule } from '@angular/router'; 
 import { CreateModal } from './create-modal/create-modal';
 
 @Component({
   selector: 'app-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule, CreateModal],
+  imports: [CommonModule, FormsModule, CreateModal, RouterModule],
   templateUrl: './booking.html',
   styleUrls: ['./booking.scss'],
   providers: [DatePipe]
 })
-export class BookingComponent {
+export class BookingComponent implements OnInit { 
   // --- UI STATE ---
   selectedBuilding: string = 'WAC Building';
   selectedDate: Date = new Date(2026, 0, 27);
@@ -39,14 +39,63 @@ export class BookingComponent {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
-  constructor(private router: Router) {}
+  // CHANGE: Changed to 'public' so the HTML can see 'router.url'
+  constructor(public router: Router) {}
+
+  // LOAD DATA on startup
+  ngOnInit() {
+    const saved = localStorage.getItem('campus_bookings');
+    if (saved) {
+      this.savedBookings = JSON.parse(saved);
+    }
+  }
+
+  // HELPER to save data
+  private saveToStorage() {
+    localStorage.setItem('campus_bookings', JSON.stringify(this.savedBookings));
+  }
 
   onSignOut() {
     this.router.navigate(['/login']);
   }
 
-  // --- HELPERS ---
-  
+  // --- MODAL & DRAWER METHODS ---
+
+  openBookingModal(room: string, periodLabel: string) {
+    const existing = this.getBooking(room, periodLabel);
+    if (existing) {
+      this.selectedBooking = existing;
+      this.isViewOpen = true; 
+    } else {
+      this.targetRoom = room;
+      this.targetPeriod = periodLabel;
+      this.isModalOpen = true; 
+    }
+  }
+
+  handleNewBooking(bookingData: any) {
+    const newBooking = {
+      ...bookingData,
+      room: this.targetRoom,     
+      period: this.targetPeriod, 
+      dateKey: this.selectedDate.toDateString(),
+      startingFrom: bookingData.startingFrom, 
+      until: bookingData.until
+    };
+
+    this.savedBookings.push(newBooking);
+    this.saveToStorage(); 
+    this.isModalOpen = false;
+  }
+
+  confirmCancel() {
+    this.savedBookings = this.savedBookings.filter(b => b !== this.selectedBooking);
+    this.saveToStorage(); 
+    this.closeView();
+  }
+
+  // --- UTILITIES ---
+
   getPeriodTime(label: string | undefined): string {
     if (!label) return '';
     const p = this.periods.find(period => period.label === label);
@@ -58,54 +107,11 @@ export class BookingComponent {
     return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
   }
 
-  // --- MODAL & DRAWER METHODS ---
-
-  openBookingModal(room: string, periodLabel: string) {
-    const existing = this.getBooking(room, periodLabel);
-
-    if (existing) {
-      // Pass the found booking object to the drawer
-      this.selectedBooking = existing;
-      this.isViewOpen = true; 
-    } else {
-      this.targetRoom = room;
-      this.targetPeriod = periodLabel;
-      this.isModalOpen = true; 
-    }
-  }
-
-  /**
-   * Captures data from the modal, including the new recurring dates.
-   */
-  handleNewBooking(bookingData: any) {
-    const newBooking = {
-      ...bookingData,
-      room: this.targetRoom,     
-      period: this.targetPeriod, 
-      dateKey: this.selectedDate.toDateString(),
-      // Ensure the keys match what your create-modal emits
-      startingFrom: bookingData.startingFrom, 
-      until: bookingData.until
-    };
-
-    this.savedBookings.push(newBooking);
-    this.isModalOpen = false;
-  }
-
-  // --- DRAWER ACTIONS ---
-
   closeView() {
     this.isViewOpen = false;
     this.showCancelConfirm = false;
     this.selectedBooking = null;
   }
-
-  confirmCancel() {
-    this.savedBookings = this.savedBookings.filter(b => b !== this.selectedBooking);
-    this.closeView();
-  }
-
-  // --- UTILITIES ---
 
   getBooking(room: string, periodLabel: string) {
     return this.savedBookings.find(b =>

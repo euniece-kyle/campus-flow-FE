@@ -1,1 +1,85 @@
-<p>department works!</p>
+<div class="layout">
+ <aside class="sidebar">
+  <div class="brand">
+    <div class="logo-container">
+      <img src="/assets/cf-logo.png" alt="CampusFlow Logo" class="logo">
+    </div>
+    <span class="brand-text">CampusFlow</span>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-item" 
+         routerLink="/booking" 
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{exact: true}">
+      Booking
+      <span class="arrow" *ngIf="router.url === '/booking'">></span>
+    </div>
+    
+    <div class="nav-item" 
+         routerLink="/department" 
+         routerLinkActive="active">
+      Department 
+      <span class="arrow" *ngIf="router.url === '/department'">></span>
+    </div>
+    
+    <div class="nav-item" 
+         routerLink="/profile" 
+         routerLinkActive="active">
+      Profile 
+      <span class="arrow" *ngIf="router.url === '/profile'">></span>
+    </div>
+  </nav>
+
+  <div class="sign-out" (click)="onSignOut()" style="cursor: pointer;">
+    <div class="sign-out-content">
+      <span class="exit-icon">🚪</span>
+      <span class="sign-out-text">Sign Out</span>
+    </div>
+  </div>
+</aside>
+
+  <main class="main">
+    <h1 class="dept-title">Departments</h1>
+
+    <div class="create-dept-container">
+      <div class="create-dept-card">
+        <button class="add-btn" (click)="addDepartment()">
+          <span class="plus">+</span>
+        </button>
+        <span class="create-label">Create department</span>
+        <input 
+          type="text" 
+          class="dept-input" 
+          placeholder="Department name"
+          [(ngModel)]="newDepartmentName"
+          (keyup.enter)="addDepartment()"
+        >
+      </div>
+    </div>
+
+    <div class="dept-table-wrapper">
+      <table class="dept-table">
+        <thead>
+          <tr>
+            <th class="col-name">Name</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let dept of departments; let i = index">
+            <td class="dept-name-cell">{{ dept }}</td>
+            <td class="dept-actions-cell">
+              <button class="action-btn edit" (click)="editDepartment(i)">
+                <span class="icon">✏️</span>
+              </button>
+              <button class="action-btn delete" (click)="deleteDepartment(i)">
+                <span class="icon">❌</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>

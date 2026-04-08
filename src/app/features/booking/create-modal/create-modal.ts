@@ -11,7 +11,7 @@ interface Period {
   selector: 'app-create-modal',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './create-modal.html',
+  templateUrl: './create-modal.html', // Ensure this file exists in the same folder
   styleUrls: ['./create-modal.scss'],
 })
 export class CreateModal implements OnInit {
@@ -25,7 +25,7 @@ export class CreateModal implements OnInit {
 
   data: any = {
     period: '',
-    department: '(None)',
+    department: '', // Default to empty so the placeholder shows
     bookedBy: 'Mr. Yuri Hanamichi',
     startDate: '',         
     untilDate: 'Ending of session',
@@ -42,10 +42,21 @@ export class CreateModal implements OnInit {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
-  departments = ['(None)', 'IT', 'Engineering', 'Science', 'Mathematics'];
+  // This list will be updated dynamically from the Department page
+  departments: string[] = [];
   staff = ['Mr. Yuri Hanamichi', 'Mr. Gojo Satoru', 'Ms. Makima', 'Mr. Kakashi Hatake'];
 
   ngOnInit() {
+    // 1. Load Departments from LocalStorage
+    const savedDepts = localStorage.getItem('campus_departments');
+    if (savedDepts) {
+      this.departments = JSON.parse(savedDepts);
+    } else {
+      // Fallback if storage is empty
+      this.departments = ['IT', 'Engineering', 'Science', 'Mathematics'];
+    }
+
+    // 2. Setup initial dates
     const d = new Date(this.selectedDate);
     let finalDate = d;
     if (isNaN(d.getTime())) {
@@ -78,9 +89,7 @@ export class CreateModal implements OnInit {
   }
 
   onUntilChange() {
-    if (this.data.untilDate === 'Pick Date') {
-      this.data.showDatePicker = true;
-    }
+    this.data.showDatePicker = (this.data.untilDate === 'Pick Date');
   }
 
   closeModal() {
@@ -88,19 +97,16 @@ export class CreateModal implements OnInit {
   }
 
   onCreateBooking() {
-    // Determine the "Until" value based on whether a custom date was picked
     const finalUntil = this.data.showDatePicker 
       ? this.formatToWords(this.data.customUntilDate) 
       : this.data.untilDate;
     
-    // Construct the payload to match the BookingComponent expectation
     const bookingPayload = {
       room: this.roomName,
       type: this.selectedType,
       bookedBy: this.data.bookedBy,
       period: this.data.period,
       department: this.data.department,
-      // Map the dates to the keys the drawer uses: startingFrom and until
       startingFrom: this.formatToWords(this.data.startDate),
       until: finalUntil
     };

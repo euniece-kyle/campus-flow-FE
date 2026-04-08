@@ -5,14 +5,32 @@
         <img src="/assets/cf-logo.png" alt="CampusFlow Logo" class="logo">
       </div>
       <span class="brand-text">CampusFlow</span>
-    </div> 
-    
+    </div>
+
     <nav class="nav">
-      <div class="nav-item active">Booking</div>
-      <div class="nav-item">Department <span class="arrow">></span></div>
-      <div class="nav-item">Profile <span class="arrow">></span></div>
+      <div class="nav-item" 
+           routerLink="/booking" 
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact: true}">
+        Booking
+        <span class="arrow" *ngIf="router.url === '/booking'">></span>
+      </div>
+      
+      <div class="nav-item" 
+           routerLink="/department" 
+           routerLinkActive="active">
+        Department 
+        <span class="arrow" *ngIf="router.url === '/department'">></span>
+      </div>
+      
+      <div class="nav-item" 
+           routerLink="/profile" 
+           routerLinkActive="active">
+        Profile 
+        <span class="arrow" *ngIf="router.url === '/profile'">></span>
+      </div>
     </nav>
-    
+
     <div class="sign-out" (click)="onSignOut()" style="cursor: pointer;">
       <div class="sign-out-content">
         <span class="exit-icon">🚪</span>
@@ -86,31 +104,33 @@
           <span class="label">Date:</span>
           <span class="value">{{ selectedDate | date:'EEEE, MMMM d, yyyy' }}</span>
         </div>
-
         <div class="info-row">
           <span class="label">Occurs:</span>
           <span class="value">{{ selectedBooking?.type }}</span>
         </div>
-
         <div class="info-row gray-bg">
           <span class="label">Period:</span>
           <span class="value">{{ selectedBooking?.period }} ({{ getPeriodTime(selectedBooking?.period) }})</span>
         </div>
-
+        
         <div class="info-row">
+          <span class="label">Subject:</span>
+          <span class="value">{{ selectedBooking?.department }}</span>
+        </div>
+
+        <div class="info-row gray-bg">
           <span class="label">Booked by:</span>
           <span class="value">{{ selectedBooking?.bookedBy }}</span>
         </div>
 
         <ng-container *ngIf="selectedBooking?.type === 'Recurring'">
-          <div class="info-row gray-bg">
-            <span class="label">Starting from:</span>
-            <span class="value">{{ selectedBooking?.startingFrom | date:'MMMM d, yyyy' }}</span>
-          </div>
-
           <div class="info-row">
+            <span class="label">Starting from:</span>
+            <span class="value">{{ selectedBooking?.startingFrom }}</span>
+          </div>
+          <div class="info-row gray-bg">
             <span class="label">Until:</span>
-            <span class="value">{{ selectedBooking?.until | date:'MMMM d, yyyy' }}</span>
+            <span class="value">{{ selectedBooking?.until }}</span>
           </div>
         </ng-container>
       </div>
@@ -122,11 +142,7 @@
 
         <div class="confirm-popup-card" *ngIf="showCancelConfirm">
           <p class="confirm-msg">Cancel {{ selectedBooking?.type | lowercase }} booking?</p>
-          
-          <button class="btn-confirm-yes" (click)="confirmCancel()">
-            Yes, cancel booking
-          </button>
-          
+          <button class="btn-confirm-yes" (click)="confirmCancel()">Yes, cancel booking</button>
           <div class="no-keep-link">
              <span (click)="showCancelConfirm = false">No, keep it</span>
           </div>
