@@ -1,131 +1,77 @@
 import { Component, OnInit } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
-
 import { FormsModule } from '@angular/forms';
-
 import { Router, RouterModule } from '@angular/router';
 
-
-
 @Component({
-
   selector: 'app-department',
-
   standalone: true,
-
   imports: [CommonModule, FormsModule, RouterModule],
-
   templateUrl: './department.html',
-
   styleUrls: ['./department.scss']
-
 })
-
 export class DepartmentComponent implements OnInit {
-
-  newDepartmentName: string = '';
-
- 
-
-  // Default list if nothing is in storage
-
-  departments: string[] = [
-
+  // Use 'Subject' terminology for clarity
+  newSubjectName: string = '';
+  subjects: string[] = [
     'Art', 'Business Studies', 'Computing', 'Drama', 'English',
-
     'Geography', 'History', 'Languages', 'Math', 'Music', 'Science', 'Technology'
-
   ];
 
-
-
-  // CHANGE: Added 'public' so the HTML can see 'router.url'
+  // Logic to show/hide the grey input box
+  isAdding: boolean = false;
 
   constructor(public router: Router) {}
 
-
-
-  // LOAD DATA when the page opens
-
   ngOnInit() {
-
+    // We keep the storage key as 'campus_departments' so it still talks to your Modal
     const saved = localStorage.getItem('campus_departments');
-
     if (saved) {
-
-      this.departments = JSON.parse(saved);
-
+      this.subjects = JSON.parse(saved);
     }
-
   }
-
-
-
-  // HELPER to save to the browser "hard drive"
 
   private saveToStorage() {
-
-    localStorage.setItem('campus_departments', JSON.stringify(this.departments));
-
+    localStorage.setItem('campus_departments', JSON.stringify(this.subjects));
   }
-
-
 
   onSignOut() {
-
     this.router.navigate(['/login']);
-
   }
 
-
-
-  addDepartment() {
-
-    if (this.newDepartmentName.trim()) {
-
-      this.departments.push(this.newDepartmentName.trim());
-
-      this.departments.sort();
-
-      this.saveToStorage();
-
-      this.newDepartmentName = '';
-
+  // Toggles the visibility of the grey box when '+' is clicked
+  toggleAddBox() {
+    this.isAdding = !this.isAdding;
+    if (!this.isAdding) {
+      this.newSubjectName = ''; // Clear text if user cancels
     }
-
   }
 
-
-
-  deleteDepartment(index: number) {
-
-    if (confirm('Are you sure you want to delete this department?')) {
-
-      this.departments.splice(index, 1);
-
+  addSubject() {
+    if (this.newSubjectName.trim()) {
+      this.subjects.push(this.newSubjectName.trim());
+      this.subjects.sort();
       this.saveToStorage();
-
+      
+      // Reset state: clear text and hide the grey box
+      this.newSubjectName = '';
+      this.isAdding = false;
     }
-
   }
 
+  deleteSubject(index: number) {
+    if (confirm('Are you sure you want to delete this subject?')) {
+      this.subjects.splice(index, 1);
+      this.saveToStorage();
+    }
+  }
 
-
-  editDepartment(index: number) {
-
-    const updatedName = prompt('Edit Department Name:', this.departments[index]);
-
+  editSubject(index: number) {
+    const updatedName = prompt('Edit Subject Name:', this.subjects[index]);
     if (updatedName && updatedName.trim()) {
-
-      this.departments[index] = updatedName.trim();
-
-      this.departments.sort();
-
+      this.subjects[index] = updatedName.trim();
+      this.subjects.sort();
       this.saveToStorage();
-
     }
-
   }
-
 }

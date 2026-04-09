@@ -1,20 +1,23 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login';
-import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password';
 import { RegisterComponent } from './features/auth/register/register';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password';
 import { BookingComponent } from './features/booking/booking'; 
-import { DepartmentComponent } from './features/department/department'; // Import the new component
+import { DepartmentComponent } from './features/department/department';
+import { ProfileComponent } from './features/profile/profile';
+import { authGuard } from './auth.guard'; // Import your guard
 
 export const routes: Routes = [
+  // PUBLIC: Anyone can see these
   { path: 'login', component: LoginComponent },
-  { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'booking', component: BookingComponent },
-  { path: 'department', component: DepartmentComponent }, // Add the department path
-  
-  // Default route (root) redirects to login
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+
+  // PROTECTED: Only entered if an account is saved/logged in
+  { path: 'booking', component: BookingComponent, canActivate: [authGuard] },
+  { path: 'department', component: DepartmentComponent, canActivate: [authGuard] },
+  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-  
-  // Wildcard route: catch any undefined URL and redirect to login
   { path: '**', redirectTo: 'login' }
 ];

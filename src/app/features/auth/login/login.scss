@@ -1,26 +1,25 @@
+/* --- VARIABLES --- */
 $maroon: #800000;       // For the text and input borders
 $gold: #F2A700;         // For the main button and logo
 $gold-shadow: #d98a00;   // Darker orange for the button's 3D base
-$cream: #fff9f0;        // The cream background color from both images
+$cream: #fff9f0;        // The cream background color
 $blue-link: #0076a3;    // Standard hyperlink blue
 
 .auth-container {
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: $cream; // The global cream background
+  background-color: $cream;
   margin: 0;
-  overflow: hidden; // Prevents accidental scrollbars
+  overflow: hidden;
 }
 
 .hero-section {
   flex: 4;
-  /* Reduced top padding and set justify-content to flex-start 
-     to pull everything to the top */
   padding: 40px 80px; 
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; // Aligns content to the top
+  justify-content: flex-start;
   color: $maroon;
   position: relative;
   
@@ -30,30 +29,28 @@ $blue-link: #0076a3;    // Standard hyperlink blue
   background-position: center;
 
   .brand {
-  display: flex;         /* Puts logo and text on the same line */
-  align-items: center;   /* Centers them vertically against each other */
-  gap: 15px;             /* Space between the logo and text */
-  margin-bottom: 40px;   /* Pushes the quote down */
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
 
-  img {
-    /* --- MAKE THIS MUCH LARGER --- */
-    width: 65px;         /* Try 65px. If you want it even bigger, increase this number */
-    height: auto;
-    object-fit: contain;
-    display: block;
-    
-    /* Manual nudge if the text looks higher or lower than the logo */
-    transform: translateY(2px); 
+    img {
+      width: 65px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      transform: translateY(2px); 
+    }
+
+    .brand-name {
+      color: #F4A100;
+      font-weight: bold;
+      font-size: 2.2rem;
+      margin: 0;
+      line-height: 1;
+    }
   }
 
-  .brand-name {
-    color: #F4A100;      /* Keep your orange color */
-    font-weight: bold;
-    font-size: 2.2rem;   /* Larger font for a more professional header */
-    margin: 0;
-    line-height: 1;      /* Crucial for alignment */
-  }
-}
   .quote {
     position: relative;
     z-index: 2;
@@ -63,15 +60,12 @@ $blue-link: #0076a3;    // Standard hyperlink blue
     font-weight: bold;
     font-style: italic;
     text-shadow: 1px 1px 4px rgba(255, 255, 255, 0.8);
-    
-    /* Optional: extra negative margin if you want it even higher */
     margin-top: 0; 
   }
 }
 
-/* RIGHT SIDE (Form) */
 .form-section {
-  flex: 6; // Takes 60% of the width
+  flex: 6;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -87,12 +81,12 @@ $blue-link: #0076a3;    // Standard hyperlink blue
       font-size: 2.1rem;
       margin-bottom: 40px;
       font-weight: bold;
-      span { color: $gold; } // Gold "CampusFlow"
+      span { color: $gold; }
     }
   }
 }
 
-/* INPUT FIELD STYLES (Matching Maroon Border) */
+/* INPUT FIELD STYLES */
 .input-group {
   margin-bottom: 25px;
   text-align: left;
@@ -100,13 +94,14 @@ $blue-link: #0076a3;    // Standard hyperlink blue
   input {
     width: 100%;
     padding: 16px 20px;
-    border: 1.5px solid $maroon; // Standard maroon border
-    border-radius: 12px; // Rounded corners from button image
-    background: white; // Clean white background inside inputs
+    border: 1.5px solid $maroon;
+    border-radius: 12px;
+    background: white;
     font-size: 1.05rem;
-    outline: none; // Hides default blue focus ring
+    outline: none;
+    box-sizing: border-box; // Prevents input from overflowing
 
-    &::placeholder { color: $maroon; opacity: 0.6; } // Maroon placeholder
+    &::placeholder { color: $maroon; opacity: 0.6; }
   }
 
   .helper-links {
@@ -116,40 +111,64 @@ $blue-link: #0076a3;    // Standard hyperlink blue
   }
 }
 
-/* THE 3D LOG IN BUTTON (Matches 'Done' image perfectly) */
-.btn-primary {
+/* --- NEW: PASSWORD WRAPPER & TOGGLE --- */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    padding-right: 50px !important; // Room for the eye icon
+  }
+
+  .visibility-toggle {
+    position: absolute;
+    right: 15px;
+    cursor: pointer;
+    font-size: 1.3rem;
+    user-select: none;
+    z-index: 10;
+    line-height: 1;
+    
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+}
+
+/* THE 3D LOG IN BUTTON (Renamed to match your HTML) */
+.btn-save-3d {
   width: 100%;
   padding: 14px 20px;
-  background: $gold; // The main gold/orange
-  color: white; // White text like 'Done'
+  background: $gold;
+  color: white;
   border: none;
-  border-radius: 12px; // Very rounded corners from button image
+  border-radius: 12px;
   font-weight: bold;
   font-size: 1.15rem;
   cursor: pointer;
-  text-transform: uppercase; // "LOG IN" in all caps
+  text-transform: uppercase;
   letter-spacing: 1px;
+  display: block;
   
-  // The bottom solid lip/shadow from your image
+  // The 3D effect
   box-shadow: 0 5px 0 $gold-shadow; 
   transition: all 0.1s ease;
 
-  // Small interaction: pushes down when clicked
   &:active {
     box-shadow: 0 2px 0 $gold-shadow;
     transform: translateY(3px);
   }
 
   &:hover {
-    filter: brightness(1.05); // Slight glow
+    filter: brightness(1.05);
   }
 }
 
-/* REGISTER HERE FOOTER */
 .switch-auth {
   margin-top: 30px;
   font-size: 0.9rem;
-  color: #333; // Neutral color for "No account yet?"
+  color: #333;
 
   a { 
     color: $blue-link; 

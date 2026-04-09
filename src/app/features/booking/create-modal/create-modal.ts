@@ -11,7 +11,7 @@ interface Period {
   selector: 'app-create-modal',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './create-modal.html', // Ensure this file exists in the same folder
+  templateUrl: './create-modal.html',
   styleUrls: ['./create-modal.scss'],
 })
 export class CreateModal implements OnInit {
@@ -25,7 +25,7 @@ export class CreateModal implements OnInit {
 
   data: any = {
     period: '',
-    department: '', // Default to empty so the placeholder shows
+    department: '', // This will hold the selected Subject name
     bookedBy: 'Mr. Yuri Hanamichi',
     startDate: '',         
     untilDate: 'Ending of session',
@@ -42,18 +42,18 @@ export class CreateModal implements OnInit {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
-  // This list will be updated dynamically from the Department page
-  departments: string[] = [];
+  // Renamed to subjects to match your new naming convention
+  subjects: string[] = [];
   staff = ['Mr. Yuri Hanamichi', 'Mr. Gojo Satoru', 'Ms. Makima', 'Mr. Kakashi Hatake'];
 
   ngOnInit() {
-    // 1. Load Departments from LocalStorage
-    const savedDepts = localStorage.getItem('campus_departments');
-    if (savedDepts) {
-      this.departments = JSON.parse(savedDepts);
+    // 1. Load Subjects from LocalStorage (using the key from Subject page)
+    const savedSubjects = localStorage.getItem('campus_departments');
+    if (savedSubjects) {
+      this.subjects = JSON.parse(savedSubjects);
     } else {
-      // Fallback if storage is empty
-      this.departments = ['IT', 'Engineering', 'Science', 'Mathematics'];
+      // Default fallback
+      this.subjects = ['Art', 'Math', 'Science', 'History'];
     }
 
     // 2. Setup initial dates
@@ -106,7 +106,7 @@ export class CreateModal implements OnInit {
       type: this.selectedType,
       bookedBy: this.data.bookedBy,
       period: this.data.period,
-      department: this.data.department,
+      department: this.data.department, // This is the Subject the user chose
       startingFrom: this.formatToWords(this.data.startDate),
       until: finalUntil
     };

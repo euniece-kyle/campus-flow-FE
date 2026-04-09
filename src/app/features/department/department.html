@@ -1,59 +1,62 @@
 <div class="layout">
- <aside class="sidebar">
-  <div class="brand">
-    <div class="logo-container">
-      <img src="/assets/cf-logo.png" alt="CampusFlow Logo" class="logo">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo-container">
+        <img src="/assets/cf-logo.png" alt="CampusFlow Logo" class="logo">
+      </div>
+      <span class="brand-text">CampusFlow</span>
     </div>
-    <span class="brand-text">CampusFlow</span>
-  </div>
 
-  <nav class="nav">
-    <div class="nav-item" 
-         routerLink="/booking" 
-         routerLinkActive="active"
-         [routerLinkActiveOptions]="{exact: true}">
-      Booking
-      <span class="arrow" *ngIf="router.url === '/booking'">></span>
-    </div>
-    
-    <div class="nav-item" 
-         routerLink="/department" 
-         routerLinkActive="active">
-      Department 
-      <span class="arrow" *ngIf="router.url === '/department'">></span>
-    </div>
-    
-    <div class="nav-item" 
-         routerLink="/profile" 
-         routerLinkActive="active">
-      Profile 
-      <span class="arrow" *ngIf="router.url === '/profile'">></span>
-    </div>
-  </nav>
+    <nav class="nav">
+      <div class="nav-item" 
+           routerLink="/booking" 
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact: true}">
+        Booking
+        <span class="arrow" *ngIf="router.url === '/booking'">></span>
+      </div>
+      
+      <div class="nav-item" 
+           routerLink="/department" 
+           routerLinkActive="active">
+        Subjects 
+        <span class="arrow" *ngIf="router.url === '/department'">></span>
+      </div>
+      
+      <div class="nav-item" 
+           routerLink="/profile" 
+           routerLinkActive="active">
+        Profile 
+        <span class="arrow" *ngIf="router.url === '/profile'">></span>
+      </div>
+    </nav>
 
-  <div class="sign-out" (click)="onSignOut()" style="cursor: pointer;">
-    <div class="sign-out-content">
-      <span class="exit-icon">🚪</span>
-      <span class="sign-out-text">Sign Out</span>
+    <div class="sign-out" (click)="onSignOut()" style="cursor: pointer;">
+      <div class="sign-out-content">
+        <span class="exit-icon">🚪</span>
+        <span class="sign-out-text">Sign Out</span>
+      </div>
     </div>
-  </div>
-</aside>
+  </aside>
 
   <main class="main">
-    <h1 class="dept-title">Departments</h1>
+    <h1 class="dept-title">Subjects</h1>
 
     <div class="create-dept-container">
       <div class="create-dept-card">
-        <button class="add-btn" (click)="addDepartment()">
+        <button class="add-btn" (click)="toggleAddBox()">
           <span class="plus">+</span>
         </button>
-        <span class="create-label">Create department</span>
+        <span class="create-label">Create Subject</span>
+        
         <input 
+          *ngIf="isAdding"
           type="text" 
           class="dept-input" 
-          placeholder="Department name"
-          [(ngModel)]="newDepartmentName"
-          (keyup.enter)="addDepartment()"
+          placeholder="Subject name"
+          [(ngModel)]="newSubjectName"
+          (keyup.enter)="addSubject()"
+          autofocus
         >
       </div>
     </div>
@@ -67,13 +70,13 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let dept of departments; let i = index">
-            <td class="dept-name-cell">{{ dept }}</td>
+          <tr *ngFor="let subject of subjects; let i = index">
+            <td class="dept-name-cell">{{ subject }}</td>
             <td class="dept-actions-cell">
-              <button class="action-btn edit" (click)="editDepartment(i)">
+              <button class="action-btn edit" (click)="editSubject(i)">
                 <span class="icon">✏️</span>
               </button>
-              <button class="action-btn delete" (click)="deleteDepartment(i)">
+              <button class="action-btn delete" (click)="deleteSubject(i)">
                 <span class="icon">❌</span>
               </button>
             </td>

@@ -1,8 +1,14 @@
+/* --- VARIABLES --- */
+$maroon: #5D1A1A;
+$gold: #F4A100;
+$gold-shadow: #d98a00;
+$cream: #FAF6F0;
+
 .auth-wrapper {
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: #FAF6F0; // Matches your cream background
+  background-color: $cream;
   margin: 0;
   overflow: hidden;
 }
@@ -14,78 +20,100 @@
   flex-direction: column;
 
   .brand {
-  display: flex;         /* Puts logo and text on the same line */
-  align-items: center;   /* Centers them vertically against each other */
-  gap: 15px;             /* Space between the logo and text */
-  margin-bottom: 40px;   /* Pushes the quote down */
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
 
-  img {
-    /* --- MAKE THIS MUCH LARGER --- */
-    width: 65px;         /* Try 65px. If you want it even bigger, increase this number */
-    height: auto;
-    object-fit: contain;
-    display: block;
-    
-    /* Manual nudge if the text looks higher or lower than the logo */
-    transform: translateY(2px); 
-  }
+    img {
+      width: 65px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      transform: translateY(2px); 
+    }
 
-  .brand-name {
-    color: #F4A100;      /* Keep your orange color */
-    font-weight: bold;
-    font-size: 2.2rem;   /* Larger font for a more professional header */
-    margin: 0;
-    line-height: 1;      /* Crucial for alignment */
-  }
-}
+    .brand-name {
+      color: $gold;
+      font-weight: bold;
+      font-size: 2.2rem;
+      margin: 0;
+      line-height: 1;
+    }
+  } // End brand
+
   .form-container {
     width: 100%;
     max-width: 420px;
+    
     .title {
-      color: #5D1A1A;
+      color: $maroon;
       font-size: 2.5rem;
       margin-bottom: 40px;
       font-weight: bold;
-      .highlight { color: #F4A100; }
+      .highlight { color: $gold; }
     }
   }
 }
 
 .input-field {
   margin-bottom: 25px;
+  
   input {
     width: 100%;
     padding: 16px;
-    border: 1.5px solid #5D1A1A;
+    border: 1.5px solid $maroon;
     border-radius: 10px;
     outline: none;
-    &::placeholder { color: #5D1A1A; opacity: 0.6; }
+    box-sizing: border-box; // Ensures padding doesn't break width
+    
+    &::placeholder { 
+      color: $maroon; 
+      opacity: 0.6; 
+    }
   }
 }
 
-/* --- UPDATED BUTTON STYLE TO MATCH PICTURE --- */
-.submit-btn {
-  background-color: #F4A100; // Original orange color
+/* THE 3D BUTTON - Renamed to match your consistent naming */
+.btn-save-3d {
+  width: 100%; // Makes it full width like your login screen
+  background-color: $gold;
   color: white;
   border: none;
   padding: 15px 40px;
-  border-radius: 12px; // Slightly increased for a softer curve
+  border-radius: 12px;
   font-weight: bold;
-  text-transform: uppercase; // Matches the image
+  text-transform: uppercase;
   cursor: pointer;
+  display: block;
   
-  /* THIS CREATES THE 3D LOOK IN THE PICTURE */
-  // The darker orange #d98a00 gives it that solid depth
-  box-shadow: 0 5px 0 #d98a00; 
+  /* The 3D Depth */
+  box-shadow: 0 5px 0 $gold-shadow; 
   transition: all 0.1s ease;
 
-  // This makes it look like it's being "pressed" down
+  &:hover {
+    filter: brightness(1.05);
+  }
+
   &:active {
-    box-shadow: 0 2px 0 #d98a00;
+    box-shadow: 0 2px 0 $gold-shadow;
     transform: translateY(3px);
   }
 }
-/* ------------------------------------------- */
+
+.login-link {
+  margin-top: 25px;
+  text-align: center;
+  color: #333;
+  
+  a {
+    color: #0076a3;
+    font-weight: bold;
+    text-decoration: none;
+    
+    &:hover { text-decoration: underline; }
+  }
+}
 
 .image-side {
   flex: 1;
