@@ -3,6 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router'; 
 import { CreateModal } from './create-modal/create-modal';
+import { RoomService } from '../services/room.service';
 
 @Component({
   selector: 'app-booking',
@@ -13,9 +14,8 @@ import { CreateModal } from './create-modal/create-modal';
   providers: [DatePipe]
 })
 export class BookingComponent implements OnInit { 
-  // --- UI STATE ---
-  selectedBuilding: string = 'WAC Building';
-  selectedDate: Date = new Date(2026, 0, 27);
+  selectedBuilding: string = 'SAC Building';
+  selectedDate: Date = new Date(); // Defaults to today for accurate tracking
   
   isModalOpen: boolean = false;
   targetRoom: string = '';
@@ -25,9 +25,7 @@ export class BookingComponent implements OnInit {
   selectedBooking: any = null;
   showCancelConfirm: boolean = false;
 
-  // --- DATA STORAGE ---
   savedBookings: any[] = [];
-
   buildings: string[] = ['SAC Building', 'NAC Building', 'WAC Building', 'EAC Building'];
   
   periods = [
@@ -39,27 +37,66 @@ export class BookingComponent implements OnInit {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
-  // CHANGE: Changed to 'public' so the HTML can see 'router.url'
-  constructor(public router: Router) {}
+  constructor(public router: Router, private roomService: RoomService) {}
 
-  // LOAD DATA on startup
   ngOnInit() {
+    this.selectedDate.setHours(0,0,0,0);
     const saved = localStorage.getItem('campus_bookings');
     if (saved) {
       this.savedBookings = JSON.parse(saved);
     }
+    this.syncService();
   }
 
-  // HELPER to save data
+  // --- THE FIX FOR ERROR TS2339 ---
+  getPeriodTime(label: string | undefined): string {
+    if (!label) return '';
+    const p = this.periods.find(period => period.label === label);
+    return p ? p.time : '';
+  }
+
   private saveToStorage() {
     localStorage.setItem('campus_bookings', JSON.stringify(this.savedBookings));
+    this.syncService(); 
   }
 
-  onSignOut() {
-    this.router.navigate(['/login']);
+  private syncService() {
+    this.roomService.updateBookings(this.savedBookings);
   }
 
-  // --- MODAL & DRAWER METHODS ---
+  handleNewBooking(bookingData: any) {
+    const newBooking = {
+      ...bookingData,
+      room: this.targetRoom,     
+      period: this.targetPeriod, 
+      dateKey: this.selectedDate.toDateString(), // Dashboard uses this for tracking
+      createdAt: new Date().toISOString()
+    };
+
+    this.savedBookings.push(newBooking);
+    this.saveToStorage(); 
+    this.isModalOpen = false;
+  }
+
+  // --- REST OF THE LOGIC ---
+  confirmCancel() {
+    this.savedBookings = this.savedBookings.filter(b => b !== this.selectedBooking);
+    this.saveToStorage(); 
+    this.closeView();
+  }
+
+  get rooms(): string[] {
+    const prefix = this.selectedBuilding.split(' ')[0];
+    return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
+  }
+
+  getBooking(room: string, periodLabel: string) {
+    return this.savedBookings.find(b =>
+      b.room === room &&
+      b.period === periodLabel &&
+      b.dateKey === this.selectedDate.toDateString()
+    );
+  }
 
   openBookingModal(room: string, periodLabel: string) {
     const existing = this.getBooking(room, periodLabel);
@@ -71,62 +108,6 @@ export class BookingComponent implements OnInit {
       this.targetPeriod = periodLabel;
       this.isModalOpen = true; 
     }
-  }
-
-  handleNewBooking(bookingData: any) {
-    const newBooking = {
-      ...bookingData,
-      room: this.targetRoom,     
-      period: this.targetPeriod, 
-      dateKey: this.selectedDate.toDateString(),
-      startingFrom: bookingData.startingFrom, 
-      until: bookingData.until
-    };
-
-    this.savedBookings.push(newBooking);
-    this.saveToStorage(); 
-    this.isModalOpen = false;
-  }
-
-  confirmCancel() {
-    this.savedBookings = this.savedBookings.filter(b => b !== this.selectedBooking);
-    this.saveToStorage(); 
-    this.closeView();
-  }
-
-  // --- UTILITIES ---
-
-  getPeriodTime(label: string | undefined): string {
-    if (!label) return '';
-    const p = this.periods.find(period => period.label === label);
-    return p ? p.time : '';
-  }
-
-  get rooms(): string[] {
-    const prefix = this.selectedBuilding.split(' ')[0];
-    return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
-  }
-
-  closeView() {
-    this.isViewOpen = false;
-    this.showCancelConfirm = false;
-    this.selectedBooking = null;
-  }
-
-  getBooking(room: string, periodLabel: string) {
-    return this.savedBookings.find(b =>
-      b.room === room &&
-      b.period === periodLabel &&
-      b.dateKey === this.selectedDate.toDateString()
-    );
-  }
-
-  closeModal() {
-    this.isModalOpen = false;
-  }
-
-  selectBuilding(building: string) {
-    this.selectedBuilding = building;
   }
 
   get dateForInput(): string {
@@ -141,12 +122,19 @@ export class BookingComponent implements OnInit {
     if (val) {
       const [year, month, day] = val.split('-').map(Number);
       this.selectedDate = new Date(year, month - 1, day);
+      this.selectedDate.setHours(0,0,0,0);
     }
   }
 
   changeDate(offset: number) {
     const d = new Date(this.selectedDate);
     d.setDate(d.getDate() + offset);
+    d.setHours(0,0,0,0);
     this.selectedDate = d;
   }
+
+  closeView() { this.isViewOpen = false; this.showCancelConfirm = false; this.selectedBooking = null; }
+  closeModal() { this.isModalOpen = false; }
+  selectBuilding(building: string) { this.selectedBuilding = building; }
+  onSignOut() { this.router.navigate(['/login']); }
 }

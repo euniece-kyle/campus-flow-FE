@@ -16,16 +16,17 @@
         <span class="arrow" *ngIf="router.url === '/booking'">></span>
       </div>
       
-      <div class="nav-item" 
-           routerLink="/department" 
-           routerLinkActive="active">
+      <div class="nav-item" routerLink="/department" routerLinkActive="active">
         Subjects 
         <span class="arrow" *ngIf="router.url === '/department'">></span>
       </div>
+
+      <div class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+        Dashboard
+        <span class="arrow" *ngIf="router.url === '/dashboard'">></span>
+      </div>
       
-      <div class="nav-item" 
-           routerLink="/profile" 
-           routerLinkActive="active">
+      <div class="nav-item" routerLink="/profile" routerLinkActive="active">
         Profile 
         <span class="arrow" *ngIf="router.url === '/profile'">></span>
       </div>
@@ -56,7 +57,7 @@
 
     <div class="tabs">
       <button *ngFor="let b of buildings" 
-              (click)="selectedBuilding = b"
+              (click)="selectBuilding(b)"
               [class.active-blue]="selectedBuilding === b"
               [class.inactive-yellow]="selectedBuilding !== b">
         {{ b }}
@@ -66,8 +67,7 @@
     <table class="booking-grid">
       <thead>
         <tr>
-          <th></th>
-          <th *ngFor="let p of periods">
+          <th></th> <th *ngFor="let p of periods">
             {{ p.label }}<br><small>({{ p.time }})</small>
           </th>
         </tr>
@@ -144,7 +144,7 @@
           <p class="confirm-msg">Cancel {{ selectedBooking?.type | lowercase }} booking?</p>
           <button class="btn-confirm-yes" (click)="confirmCancel()">Yes, cancel booking</button>
           <div class="no-keep-link">
-             <span (click)="showCancelConfirm = false">No, keep it</span>
+              <span (click)="showCancelConfirm = false">No, keep it</span>
           </div>
         </div>
       </div>

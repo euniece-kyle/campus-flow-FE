@@ -1,0 +1,119 @@
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo-container">
+        <img src="/assets/cf-logo.png" alt="CampusFlow Logo" class="logo">
+      </div>
+      <span class="brand-text">CampusFlow</span>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-item" routerLink="/booking" routerLinkActive="active">
+        Booking
+        <span class="arrow" *ngIf="router.url === '/booking'">></span>
+      </div>
+      
+      <div class="nav-item" routerLink="/department" routerLinkActive="active">
+        Subjects 
+        <span class="arrow" *ngIf="router.url === '/department'">></span>
+      </div>
+
+      <div class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+        Dashboard
+        <span class="arrow" *ngIf="router.url === '/dashboard'">></span>
+      </div>
+      
+      <div class="nav-item" routerLink="/profile" routerLinkActive="active">
+        Profile 
+        <span class="arrow" *ngIf="router.url === '/profile'">></span>
+      </div>
+    </nav>
+
+    <div class="sign-out" (click)="onSignOut()" style="cursor: pointer;">
+      <div class="sign-out-content">
+        <span class="exit-icon">🚪</span>
+        <span class="sign-out-text">Sign Out</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="dashboard-header">
+      <h1 class="dashboard-title">Dashboard</h1>
+      <p class="welcome-msg">
+        Welcome to <span class="brand-highlight">CampusFlow</span>. Here is today's overview.
+      </p>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon-circle red-light-bg">🏫</div>
+        <div class="stat-info">
+          <h3>{{ totalRooms }}</h3>
+          <p>Total Rooms</p>
+        </div>
+      </div>
+
+      <div class="stat-card clickable" (click)="toggleBookingList()" style="cursor: pointer; transition: transform 0.2s;">
+        <div class="icon-circle gold-light-bg">📍</div>
+        <div class="stat-info">
+          <h3>{{ activeBookings }}</h3>
+          <p>Active Bookings</p>
+          <small *ngIf="!isListVisible" style="color: #999;">Click to view ↓</small>
+          <small *ngIf="isListVisible" style="color: #d4af37;">Click to hide ↑</small>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="icon-circle green-light-bg">🔓</div>
+        <div class="stat-info">
+          <h3>{{ availableNow }}</h3>
+          <p>Available Now</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="icon-circle blue-light-bg">📅</div>
+        <div class="stat-info">
+          <h3>{{ dailyTotal }}</h3>
+          <p>Daily Sessions</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="details-panel" *ngIf="isListVisible" style="margin-top: 20px; animation: fadeIn 0.3s ease;">
+      <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="font-size: 1.2rem; color: #333;">Live Booking Details (Today)</h2>
+        <button (click)="clearAllBookings()" style="background: #fff0f0; color: #ff4d4d; border: 1px solid #ffcccc; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Clear All</button>
+      </div>
+
+      <div class="booking-list" style="display: grid; gap: 10px;">
+        <div *ngIf="todaysBookings.length === 0" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 8px; color: #666;">
+          No bookings found for today.
+        </div>
+
+        <div *ngFor="let b of todaysBookings" class="detail-item" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #d4af37;">
+          <div>
+            <span style="font-weight: bold; color: #333; display: block;">{{ b.room }}</span>
+            <span style="font-size: 0.85rem; color: #666;">{{ b.period }}</span>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-size: 0.9rem; color: #444; display: block;">{{ b.reservedBy || 'Faculty User' }}</span>
+            <span style="font-size: 0.75rem; background: #f0f0f0; padding: 2px 8px; border-radius: 10px;">Confirmed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="hero-section" *ngIf="!isListVisible">
+        <div class="hero-content">
+            <h2>Streamlining Campus Space</h2>
+            <p>
+              Effortlessly manage <strong>{{ totalRooms }} rooms</strong> 
+              across <strong>{{ buildings.length }} buildings</strong> 
+              and <strong>{{ periodsPerDay }} daily periods</strong>.
+            </p>
+        </div>
+    </div>
+  </main>
+</div>
