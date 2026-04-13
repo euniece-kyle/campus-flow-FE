@@ -25,8 +25,8 @@ export class CreateModal implements OnInit {
 
   data: any = {
     period: '',
-    department: '', // This will hold the selected Subject name
-    bookedBy: 'Mr. Yuri Hanamichi',
+    department: '', 
+    bookedBy: '', // Will be set dynamically
     startDate: '',         
     untilDate: 'Ending of session',
     customUntilDate: '',    
@@ -42,21 +42,38 @@ export class CreateModal implements OnInit {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
-  // Renamed to subjects to match your new naming convention
   subjects: string[] = [];
-  staff = ['Mr. Yuri Hanamichi', 'Mr. Gojo Satoru', 'Ms. Makima', 'Mr. Kakashi Hatake'];
+  
+  // This list will now only contain the active profile name
+  staff: string[] = [];
 
   ngOnInit() {
-    // 1. Load Subjects from LocalStorage (using the key from Subject page)
+    // 1. DYNAMIC PROFILE CONNECTION
+    // Look for the user data in localStorage (adjust 'user_profile' to match your key)
+    const activeProfile = localStorage.getItem('user_profile'); 
+    
+    if (activeProfile) {
+      const profileData = JSON.parse(activeProfile);
+      // Use the name from your profile file/object
+      const profileName = profileData.name || profileData.fullName || 'Unknown User';
+      
+      this.data.bookedBy = profileName;
+      this.staff = [profileName]; // Puts ONLY the profile name in the dropdown list
+    } else {
+      // Fallback if no one is logged in
+      this.data.bookedBy = 'Guest';
+      this.staff = ['Guest'];
+    }
+
+    // 2. Load Subjects from LocalStorage
     const savedSubjects = localStorage.getItem('campus_departments');
     if (savedSubjects) {
       this.subjects = JSON.parse(savedSubjects);
     } else {
-      // Default fallback
       this.subjects = ['Art', 'Math', 'Science', 'History'];
     }
 
-    // 2. Setup initial dates
+    // 3. Setup initial dates
     const d = new Date(this.selectedDate);
     let finalDate = d;
     if (isNaN(d.getTime())) {
@@ -106,7 +123,7 @@ export class CreateModal implements OnInit {
       type: this.selectedType,
       bookedBy: this.data.bookedBy,
       period: this.data.period,
-      department: this.data.department, // This is the Subject the user chose
+      department: this.data.department,
       startingFrom: this.formatToWords(this.data.startDate),
       until: finalUntil
     };

@@ -67,7 +67,8 @@
     <table class="booking-grid">
       <thead>
         <tr>
-          <th></th> <th *ngFor="let p of periods">
+          <th></th> 
+          <th *ngFor="let p of periods">
             {{ p.label }}<br><small>({{ p.time }})</small>
           </th>
         </tr>
@@ -82,9 +83,10 @@
                    'booked-one-time': getBooking(room, p.label)?.type === 'One-Time',
                    'booked-recurring': getBooking(room, p.label)?.type === 'Recurring'
                  }">
-              <span class="teacher-name" *ngIf="getBooking(room, p.label)">
-                {{ getBooking(room, p.label).bookedBy }}
-              </span>
+              <div class="booking-inner-content" *ngIf="getBooking(room, p.label) as booking">
+                <span class="teacher-name">{{ booking.bookedBy }}</span>
+                <small class="subject-tag">{{ booking.subject }}</small>
+              </div>
             </div>
           </td>
         </tr>
@@ -115,7 +117,7 @@
         
         <div class="info-row">
           <span class="label">Subject:</span>
-          <span class="value">{{ selectedBooking?.department }}</span>
+          <span class="value">{{ selectedBooking?.subject }}</span>
         </div>
 
         <div class="info-row gray-bg">
