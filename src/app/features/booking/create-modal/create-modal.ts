@@ -26,7 +26,7 @@ export class CreateModal implements OnInit {
   data: any = {
     period: '',
     department: '', 
-    bookedBy: '', // Will be set dynamically
+    bookedBy: '', 
     startDate: '',         
     untilDate: 'Ending of session',
     customUntilDate: '',    
@@ -44,28 +44,29 @@ export class CreateModal implements OnInit {
 
   subjects: string[] = [];
   
-  // This list will now only contain the active profile name
+  // This list will hold the multiple "Guest" placeholders for your teammate
   staff: string[] = [];
 
   ngOnInit() {
     // 1. DYNAMIC PROFILE CONNECTION
-    // Look for the user data in localStorage (adjust 'user_profile' to match your key)
     const activeProfile = localStorage.getItem('user_profile'); 
     
     if (activeProfile) {
       const profileData = JSON.parse(activeProfile);
-      // Use the name from your profile file/object
       const profileName = profileData.name || profileData.fullName || 'Unknown User';
       
       this.data.bookedBy = profileName;
-      this.staff = [profileName]; // Puts ONLY the profile name in the dropdown list
+      // If you want the list to only have the user, use: this.staff = [profileName];
+      // If you want to show the dropdown working with many names:
+      this.staff = [profileName, 'Guest 1', 'Guest 2', 'Guest 3', 'Guest 4', 'Guest 5'];
     } else {
-      // Fallback if no one is logged in
+      // 2. MOCK DATA FOR FRONTEND DEVELOPMENT
+      // This creates an array of 10 "Guest" entries so the dropdown is scrollable
       this.data.bookedBy = 'Guest';
-      this.staff = ['Guest'];
+      this.staff = Array(10).fill('Guest'); 
     }
 
-    // 2. Load Subjects from LocalStorage
+    // 3. Load Subjects from LocalStorage
     const savedSubjects = localStorage.getItem('campus_departments');
     if (savedSubjects) {
       this.subjects = JSON.parse(savedSubjects);
@@ -73,7 +74,7 @@ export class CreateModal implements OnInit {
       this.subjects = ['Art', 'Math', 'Science', 'History'];
     }
 
-    // 3. Setup initial dates
+    // 4. Setup initial dates
     const d = new Date(this.selectedDate);
     let finalDate = d;
     if (isNaN(d.getTime())) {
