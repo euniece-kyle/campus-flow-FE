@@ -16,8 +16,9 @@ interface Period {
   styleUrls: ['./create-modal.scss'],
 })
 export class CreateModal implements OnInit {
-  @Input() roomName: string = '';
-  @Input() selectedDate: string = ''; 
+@Input() roomName: string = '';
+@Input() selectedDate: string = '';
+@Input() bookedBy: string = '';
   
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();

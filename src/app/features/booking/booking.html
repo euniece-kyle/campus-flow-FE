@@ -158,6 +158,7 @@
   *ngIf="isModalOpen" 
   [roomName]="targetRoom"
   [selectedDate]="(selectedDate | date:'EEEE, MMMM d, yyyy') ?? ''"
+  [bookedBy]="currentUserDisplayName" 
   (close)="closeModal()"
   (create)="handleNewBooking($event)">
 </app-create-modal>

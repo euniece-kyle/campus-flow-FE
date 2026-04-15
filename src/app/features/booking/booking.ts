@@ -15,7 +15,8 @@ import { RoomService } from '../services/room.service';
 })
 export class BookingComponent implements OnInit { 
   selectedBuilding: string = 'SAC Building';
-  selectedDate: Date = new Date(); // Defaults to today for accurate tracking
+  selectedDate: Date = new Date(); // You can eventually get this from your Auth service/localStorage
+currentUserDisplayName: string = 'Helen Grace Fillalan'; // Defaults to today for accurate tracking
   
   isModalOpen: boolean = false;
   targetRoom: string = '';

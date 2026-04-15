@@ -43,8 +43,8 @@
       </div>
 
       <label>Booked By:</label>
-        <div class="form-value text-only">
-          {{ data.bookedBy }}
+        <div>
+          <strong>Booked By:</strong> {{ bookedBy }}
         </div>
 
       <ng-container *ngIf="selectedType === 'Recurring'">
