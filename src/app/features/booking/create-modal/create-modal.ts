@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { BookingService } from '../../../services/booking.service'; // Ensure this path is correct!
 
 interface Period {
   label: string;
@@ -20,6 +21,9 @@ export class CreateModal implements OnInit {
   
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
+
+  // Add constructor to inject the service
+  constructor(private bookingService: BookingService) {}
 
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
 
@@ -43,23 +47,23 @@ export class CreateModal implements OnInit {
   ];
 
   subjects: string[] = [];
-
   staff: string[] = [];
 
   ngOnInit() {
-  const activeProfile = localStorage.getItem('user_profile'); 
-  if (activeProfile) {
-    const profileData = JSON.parse(activeProfile);
-    this.data.bookedBy = profileData.fullName || profileData.username || 'Unknown User';
-    this.staff = [this.data.bookedBy];
-  } else {
+    // 1. Fetch users from API
+    this.bookingService.getUsers().subscribe({
+      next: (users: any[]) => {
+        this.staff = users.map(u => u.username); 
+        const activeProfile = localStorage.getItem('user_profile');
+        if (activeProfile) {
+          const profileData = JSON.parse(activeProfile);
+          this.data.bookedBy = profileData.username;
+        }
+      },
+      error: (err) => console.error('Error fetching users:', err)
+    });
 
-    this.data.bookedBy = 'Guest';
-    this.staff = ['Guest']; 
-  }
-    
-
-    // 3. Load Subjects from LocalStorage
+    // 2. Load Subjects from LocalStorage
     const savedSubjects = localStorage.getItem('campus_departments');
     if (savedSubjects) {
       this.subjects = JSON.parse(savedSubjects);
@@ -67,7 +71,7 @@ export class CreateModal implements OnInit {
       this.subjects = ['Art', 'Math', 'Science', 'History'];
     }
 
-    // 4. Setup initial dates
+    // 3. Setup initial dates
     const d = new Date(this.selectedDate);
     let finalDate = d;
     if (isNaN(d.getTime())) {
@@ -77,7 +81,7 @@ export class CreateModal implements OnInit {
     const isoDate = this.toISODate(finalDate);
     this.data.startDate = isoDate;
     this.data.customUntilDate = isoDate;
-  }
+  } // Corrected closing bracket for ngOnInit
 
   toISODate(date: Date): string {
     const offset = date.getTimezoneOffset();
@@ -91,10 +95,7 @@ export class CreateModal implements OnInit {
     if (isNaN(d.getTime())) return dateStr;
     
     const options: Intl.DateTimeFormatOptions = { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
     };
     return d.toLocaleDateString('en-US', options);
   }
