@@ -1,7 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BookingService } from '../../../services/booking.service';
+import { BookingService } from '../../../services/booking.service'; // Fixed path
+
 interface Period {
   label: string;
   time: string;
@@ -21,8 +22,8 @@ export class CreateModal implements OnInit {
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
 
-// Inside your class:
-constructor(private bookingService: BookingService) {}
+  // ✅ THIS MUST BE INSIDE THE CLASS BRACES
+  constructor(private bookingService: BookingService) {}
 
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
 
@@ -49,7 +50,6 @@ constructor(private bookingService: BookingService) {}
   staff: string[] = [];
 
   ngOnInit() {
-    // 1. Fetch users from API
     this.bookingService.getUsers().subscribe({
       next: (users: any[]) => {
         this.staff = users.map(u => u.username); 
@@ -59,10 +59,9 @@ constructor(private bookingService: BookingService) {}
           this.data.bookedBy = profileData.username;
         }
       },
-        error: (err: any) => console.error('Error fetching users:', err)
+      error: (err: any) => console.error('Error fetching users:', err)
     });
 
-    // 2. Load Subjects from LocalStorage
     const savedSubjects = localStorage.getItem('campus_departments');
     if (savedSubjects) {
       this.subjects = JSON.parse(savedSubjects);
@@ -70,7 +69,6 @@ constructor(private bookingService: BookingService) {}
       this.subjects = ['Art', 'Math', 'Science', 'History'];
     }
 
-    // 3. Setup initial dates
     const d = new Date(this.selectedDate);
     let finalDate = d;
     if (isNaN(d.getTime())) {
@@ -80,7 +78,7 @@ constructor(private bookingService: BookingService) {}
     const isoDate = this.toISODate(finalDate);
     this.data.startDate = isoDate;
     this.data.customUntilDate = isoDate;
-  } // Corrected closing bracket for ngOnInit
+  }
 
   toISODate(date: Date): string {
     const offset = date.getTimezoneOffset();
@@ -92,10 +90,7 @@ constructor(private bookingService: BookingService) {}
     if (!dateStr) return '';
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
-    
-    const options: Intl.DateTimeFormatOptions = { 
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-    };
+    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return d.toLocaleDateString('en-US', options);
   }
 
@@ -108,10 +103,7 @@ constructor(private bookingService: BookingService) {}
   }
 
   onCreateBooking() {
-    const finalUntil = this.data.showDatePicker 
-      ? this.formatToWords(this.data.customUntilDate) 
-      : this.data.untilDate;
-    
+    const finalUntil = this.data.showDatePicker ? this.formatToWords(this.data.customUntilDate) : this.data.untilDate;
     const bookingPayload = {
       room: this.roomName,
       type: this.selectedType,
@@ -121,7 +113,6 @@ constructor(private bookingService: BookingService) {}
       startingFrom: this.formatToWords(this.data.startDate),
       until: finalUntil
     };
-    
     this.create.emit(bookingPayload);
     this.closeModal();
   }
