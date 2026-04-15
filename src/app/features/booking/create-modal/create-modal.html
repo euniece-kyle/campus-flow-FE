@@ -43,9 +43,12 @@
       </div>
 
       <label>Booked By:</label>
-        <div>
-          <strong>Booked By:</strong> {{ bookedBy }}
-        </div>
+      <div class="form-value dropdown-wrapper">
+        <select [(ngModel)]="bookedBy" class="native-look">
+            <option *ngFor="let name of staff" [value]="name">{{ name }}</option>
+        </select>
+        <span class="arrow-icon">▼</span>
+      </div>
 
       <ng-container *ngIf="selectedType === 'Recurring'">
         <label>Starting from...</label>

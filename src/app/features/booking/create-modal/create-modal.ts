@@ -16,22 +16,18 @@ interface Period {
   styleUrls: ['./create-modal.scss'],
 })
 export class CreateModal implements OnInit {
-@Input() roomName: string = '';
-@Input() selectedDate: string = '';
-@Input() bookedBy: string = '';
-  
+  @Input() roomName: string = '';
+  @Input() selectedDate: string = '';
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
 
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
-
-  users: any[] = []; // To store names from database
-  selectedUser: string = '';
+  staff: string[] = []; // This stores the names from MySQL
+  bookedBy: string = ''; // Added this missing variable
 
   data: any = {
     period: '',
-    department: '', 
-    bookedBy: '', 
+    department: '',
     startDate: '',         
     untilDate: 'Ending of session',
     customUntilDate: '',    
@@ -47,24 +43,30 @@ export class CreateModal implements OnInit {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
-    // ✅ THIS MUST BE INSIDE THE CLASS BRACES
   constructor(private bookingService: BookingService) {}
 
   subjects: string[] = [];
-  staff: string[] = [];
 
   ngOnInit() {
+    // DATA INTEGRATION: Fetching names from MySQL via the Service
     this.bookingService.getUsers().subscribe({
       next: (users: any[]) => {
         this.staff = users.map(u => u.username); 
+        
+        // AUTO-FILL: If a user is logged in, use their name as default
         const activeProfile = localStorage.getItem('user_profile');
-        if (!this.bookedBy) {
-      this.bookedBy = "Retrieving user..."; 
-      }
+        if (activeProfile) {
+          const user = JSON.parse(activeProfile);
+          this.bookedBy = user.username || "Guest";
+        } else {
+          this.bookedBy = "Guest"; 
+        }
       },
-      error: (err: any) => console.error('Error fetching users:', err)
+      error: (err: any) => {
+        console.error('Error fetching users:', err);
+        this.bookedBy = "Guest";
+      }
     });
-
 
     const savedSubjects = localStorage.getItem('campus_departments');
     if (savedSubjects) {
@@ -75,9 +77,7 @@ export class CreateModal implements OnInit {
 
     const d = new Date(this.selectedDate);
     let finalDate = d;
-    if (isNaN(d.getTime())) {
-       finalDate = new Date(); 
-    }
+    if (isNaN(d.getTime())) { finalDate = new Date(); }
 
     const isoDate = this.toISODate(finalDate);
     this.data.startDate = isoDate;
@@ -106,23 +106,22 @@ export class CreateModal implements OnInit {
     this.close.emit();
   }
 onSubmit() {
-    // 1. Create the data package to send to your MySQL database
+    const finalUntil = this.selectedType === 'Recurring' 
+      ? (this.data.showDatePicker ? this.formatToWords(this.data.customUntilDate) : this.data.untilDate)
+      : 'One-Time';
+
     const bookingPayload = {
       room: this.roomName,
       date: this.selectedDate,
       type: this.selectedType,
-      bookedBy: this.bookedBy, // This uses the name from your API/Input
+      bookedBy: this.bookedBy, // Sends the name from the dropdown/database
       period: this.data.period,
-      subject: this.data.subject,
-      department: this.data.department,
-      startingFrom: this.data.startingFrom,
-      until: this.data.until
+      subject: this.data.department,
+      startingFrom: this.formatToWords(this.data.startDate),
+      until: finalUntil
     };
 
-    // 2. Emit the data to the parent (booking.ts) so it can call your API
     this.create.emit(bookingPayload);
-    
-    // 3. Close the modal after clicking create
     this.close.emit();
   }
 }
