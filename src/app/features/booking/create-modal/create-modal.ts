@@ -43,28 +43,21 @@ export class CreateModal implements OnInit {
   ];
 
   subjects: string[] = [];
-  
-  // This list will hold the multiple "Guest" placeholders for your teammate
+
   staff: string[] = [];
 
   ngOnInit() {
-    // 1. DYNAMIC PROFILE CONNECTION
-    const activeProfile = localStorage.getItem('user_profile'); 
+  const activeProfile = localStorage.getItem('user_profile'); 
+  if (activeProfile) {
+    const profileData = JSON.parse(activeProfile);
+    this.data.bookedBy = profileData.fullName || profileData.username || 'Unknown User';
+    this.staff = [this.data.bookedBy];
+  } else {
+
+    this.data.bookedBy = 'Guest';
+    this.staff = ['Guest']; 
+  }
     
-    if (activeProfile) {
-      const profileData = JSON.parse(activeProfile);
-      const profileName = profileData.name || profileData.fullName || 'Unknown User';
-      
-      this.data.bookedBy = profileName;
-      // If you want the list to only have the user, use: this.staff = [profileName];
-      // If you want to show the dropdown working with many names:
-      this.staff = [profileName, 'Guest 1', 'Guest 2', 'Guest 3', 'Guest 4', 'Guest 5'];
-    } else {
-      // 2. MOCK DATA FOR FRONTEND DEVELOPMENT
-      // This creates an array of 10 "Guest" entries so the dropdown is scrollable
-      this.data.bookedBy = 'Guest';
-      this.staff = Array(10).fill('Guest'); 
-    }
 
     // 3. Load Subjects from LocalStorage
     const savedSubjects = localStorage.getItem('campus_departments');
