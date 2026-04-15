@@ -221,3 +221,27 @@ app-create-modal {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   z-index: 99999 !important; pointer-events: none;
 }
+
+.booking-inner-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  text-align: center;
+  padding: 2px;
+}
+
+.teacher-name {
+  font-weight: 600;
+  font-size: 0.8rem;
+  line-height: 1.1;
+  margin-bottom: 2px; /* Adds space so they don't touch */
+}
+
+.subject-tag {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
