@@ -105,7 +105,7 @@
 
 .native-look {
   width: 100%;
-  height: 40px; // Explicit height to match everything
+  height: 40px;
   padding: 10px 12px;
   border: 1px solid #767676; 
   border-radius: 4px;
@@ -116,7 +116,6 @@
   font-family: inherit;
   color: #333;
 
-  /* Standard appearance for select boxes */
   appearance: none; 
   -webkit-appearance: none;
 
@@ -125,12 +124,10 @@
   }
 }
 
-/* Specific styling for the numeric Date Input to match the select boxes */
 input[type="date"].native-look {
-  appearance: listbox; // Forces standard boxed appearance in many browsers
+  appearance: listbox;
   -webkit-appearance: listbox;
-  
-  /* Styling the native calendar icon */
+
   &::-webkit-calendar-picker-indicator {
     cursor: pointer;
     opacity: 0.8;

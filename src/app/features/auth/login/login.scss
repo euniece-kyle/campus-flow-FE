@@ -1,9 +1,9 @@
 /* --- VARIABLES --- */
-$maroon: #800000;       // For the text and input borders
-$gold: #F2A700;         // For the main button and logo
-$gold-shadow: #d98a00;   // Darker orange for the button's 3D base
-$cream: #fff9f0;        // The cream background color
-$blue-link: #0076a3;    // Standard hyperlink blue
+$maroon: #800000;
+$gold: #F2A700;
+$gold-shadow: #d98a00;
+$cream: #fff9f0;
+$blue-link: #0076a3;
 
 .auth-container {
   display: flex;
@@ -118,7 +118,7 @@ $blue-link: #0076a3;    // Standard hyperlink blue
   align-items: center;
 
   input {
-    padding-right: 50px !important; // Room for the eye icon
+    padding-right: 50px !important;
   }
 
   .visibility-toggle {
@@ -136,7 +136,7 @@ $blue-link: #0076a3;    // Standard hyperlink blue
   }
 }
 
-/* THE 3D LOG IN BUTTON (Renamed to match your HTML) */
+/* THE 3D LOG IN BUTTON */
 .btn-save-3d {
   width: 100%;
   padding: 14px 20px;
@@ -151,7 +151,6 @@ $blue-link: #0076a3;    // Standard hyperlink blue
   letter-spacing: 1px;
   display: block;
   
-  // The 3D effect
   box-shadow: 0 5px 0 $gold-shadow; 
   transition: all 0.1s ease;
 

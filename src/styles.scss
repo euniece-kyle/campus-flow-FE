@@ -1,14 +1,11 @@
-/* You can add global styles to this file, and also import other style files */
-/* src/styles.scss */
-
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
   width: 100%;
-  background-color: #FAF6F0; /* This ensures the very bottom layer is cream */
+  background-color: #FAF6F0;
 }
 
 * {
-  box-sizing: border-box; /* Prevents padding from breaking your layout */
+  box-sizing: border-box;
 }

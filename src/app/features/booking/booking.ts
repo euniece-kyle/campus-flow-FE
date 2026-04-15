@@ -15,8 +15,8 @@ import { RoomService } from '../services/room.service';
 })
 export class BookingComponent implements OnInit { 
   selectedBuilding: string = 'SAC Building';
-  selectedDate: Date = new Date(); // You can eventually get this from your Auth service/localStorage
-currentUserDisplayName: string = 'Helen Grace Fillalan'; // Defaults to today for accurate tracking
+  selectedDate: Date = new Date();
+currentUserDisplayName: string = 'Helen Grace Fillalan';
   
   isModalOpen: boolean = false;
   targetRoom: string = '';
@@ -49,7 +49,6 @@ currentUserDisplayName: string = 'Helen Grace Fillalan'; // Defaults to today fo
     this.syncService();
   }
 
-  // --- THE FIX FOR ERROR TS2339 ---
   getPeriodTime(label: string | undefined): string {
     if (!label) return '';
     const p = this.periods.find(period => period.label === label);
@@ -70,7 +69,7 @@ currentUserDisplayName: string = 'Helen Grace Fillalan'; // Defaults to today fo
       ...bookingData,
       room: this.targetRoom,     
       period: this.targetPeriod, 
-      dateKey: this.selectedDate.toDateString(), // Dashboard uses this for tracking
+      dateKey: this.selectedDate.toDateString(),
       createdAt: new Date().toISOString()
     };
 
@@ -79,7 +78,6 @@ currentUserDisplayName: string = 'Helen Grace Fillalan'; // Defaults to today fo
     this.isModalOpen = false;
   }
 
-  // --- REST OF THE LOGIC ---
   confirmCancel() {
     this.savedBookings = this.savedBookings.filter(b => b !== this.selectedBooking);
     this.saveToStorage(); 

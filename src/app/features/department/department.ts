@@ -18,13 +18,11 @@ export class DepartmentComponent implements OnInit {
     'Geography', 'History', 'Languages', 'Math', 'Music', 'Science', 'Technology'
   ];
 
-  // Logic to show/hide the grey input box
   isAdding: boolean = false;
 
   constructor(public router: Router) {}
 
   ngOnInit() {
-    // We keep the storage key as 'campus_departments' so it still talks to your Modal
     const saved = localStorage.getItem('campus_departments');
     if (saved) {
       this.subjects = JSON.parse(saved);
@@ -39,11 +37,10 @@ export class DepartmentComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  // Toggles the visibility of the grey box when '+' is clicked
   toggleAddBox() {
     this.isAdding = !this.isAdding;
     if (!this.isAdding) {
-      this.newSubjectName = ''; // Clear text if user cancels
+      this.newSubjectName = '';
     }
   }
 
@@ -52,8 +49,7 @@ export class DepartmentComponent implements OnInit {
       this.subjects.push(this.newSubjectName.trim());
       this.subjects.sort();
       this.saveToStorage();
-      
-      // Reset state: clear text and hide the grey box
+
       this.newSubjectName = '';
       this.isAdding = false;
     }

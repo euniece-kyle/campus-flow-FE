@@ -13,7 +13,6 @@ export class BookingService {
   }
 
   createBooking(payload: any): Observable<any> {
-    // Hits /api/add (based on your flowRouter.post('/add') definition)
     return this.http.post<any>(`${this.apiUrl}/add`, payload); 
   }
 }

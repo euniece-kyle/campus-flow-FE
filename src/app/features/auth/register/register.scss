@@ -40,7 +40,7 @@ $cream: #FAF6F0;
       margin: 0;
       line-height: 1;
     }
-  } // End brand
+  }
 
   .form-container {
     width: 100%;
@@ -65,7 +65,7 @@ $cream: #FAF6F0;
     border: 1.5px solid $maroon;
     border-radius: 10px;
     outline: none;
-    box-sizing: border-box; // Ensures padding doesn't break width
+    box-sizing: border-box;
     
     &::placeholder { 
       color: $maroon; 
@@ -74,9 +74,8 @@ $cream: #FAF6F0;
   }
 }
 
-/* THE 3D BUTTON - Renamed to match your consistent naming */
 .btn-save-3d {
-  width: 100%; // Makes it full width like your login screen
+  width: 100%;
   background-color: $gold;
   color: white;
   border: none;
@@ -87,7 +86,6 @@ $cream: #FAF6F0;
   cursor: pointer;
   display: block;
   
-  /* The 3D Depth */
   box-shadow: 0 5px 0 $gold-shadow; 
   transition: all 0.1s ease;
 

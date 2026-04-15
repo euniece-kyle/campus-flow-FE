@@ -35,7 +35,6 @@ export class ProfileComponent implements OnInit {
       this.user = JSON.parse(savedUser);
       this.generatePasswordHint();
     } else {
-      // Security Check: If someone gets here without logging in, boot them
       this.router.navigate(['/login']);
     }
   }
@@ -57,17 +56,15 @@ export class ProfileComponent implements OnInit {
       this.userBackup = { ...this.user };
       this.isEditing = true;
     } else {
-      // Logic for "DONE" (Saving)
       const first = this.user.firstName.trim().charAt(0) || '';
       const last = this.user.lastName.trim().charAt(0) || '';
       this.user.initials = (first + last).toUpperCase();
       
-      this.saveUserData(); // Save to both LocalStorage keys
+      this.saveUserData();
       this.isEditing = false;
     }
   }
 
-  // --- HELPER: Save to both 'currentUser' AND 'registeredUsers' ---
   saveUserData() {
     // 1. Update Session
     localStorage.setItem('currentUser', JSON.stringify(this.user));

@@ -6,18 +6,16 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink], // Added CommonModule and FormsModule
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './forgot-password.html',
   styleUrl: './forgot-password.scss'
 })
 export class ForgotPasswordComponent {
-  // Input bindings
   email: string = '';
   newPassword: string = '';
   confirmPassword: string = '';
 
-  // Logic states
-  step: number = 1; // Step 1: Find Email, Step 2: New Password
+  step: number = 1;
 
   constructor(private router: Router) {}
 
@@ -32,7 +30,7 @@ export class ForgotPasswordComponent {
     const userExists = allUsers.find((u: any) => u.email === this.email);
 
     if (userExists) {
-      this.step = 2; // Move to the "New Password" screen
+      this.step = 2;
     } else {
       alert('This email is not registered with CampusFlow.');
     }
@@ -55,12 +53,10 @@ export class ForgotPasswordComponent {
       return;
     }
 
-    // Update 'registeredUsers' array
     const allUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
     const userIndex = allUsers.findIndex((u: any) => u.email === this.email);
 
     if (userIndex !== -1) {
-      // Update the password for this user
       allUsers[userIndex].password = this.newPassword;
       localStorage.setItem('registeredUsers', JSON.stringify(allUsers));
 
@@ -72,7 +68,6 @@ export class ForgotPasswordComponent {
     }
   }
 
-  // For the "Back" or "Done" buttons
   onCancel() {
     this.router.navigate(['/login']);
   }

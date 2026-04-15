@@ -6,19 +6,15 @@ import { BookingComponent } from './features/booking/booking';
 import { DepartmentComponent } from './features/department/department';
 import { ProfileComponent } from './features/profile/profile';
 
-// 1. IMPORT YOUR DASHBOARD COMPONENT
 import { DashboardComponent } from './features/booking/dashboard/dashboard'; 
 
 import { authGuard } from './auth.guard'; 
 
 export const routes: Routes = [
-  // PUBLIC: Anyone can see these
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
 
-  // PROTECTED: Only entered if an account is saved/logged in
-  // 2. ADD THE DASHBOARD ROUTE HERE
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
   
   { path: 'booking', component: BookingComponent, canActivate: [authGuard] },

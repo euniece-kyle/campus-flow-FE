@@ -114,7 +114,7 @@ onSubmit() {
       room: this.roomName,
       date: this.selectedDate,
       type: this.selectedType,
-      bookedBy: this.bookedBy, // Sends the name from the dropdown/database
+      bookedBy: this.bookedBy,
       period: this.data.period,
       subject: this.data.department,
       startingFrom: this.formatToWords(this.data.startDate),

@@ -13,11 +13,11 @@ beforeEach(async () => {
       imports: [
         ForgotPasswordComponent,
         HttpClientModule,
-        ReactiveFormsModule, // <--- MAKE SURE THIS COMMA IS HERE
+        ReactiveFormsModule,
       ],
       providers: [provideRouter([])]
-    }).compileComponents(); // <--- This line will now stop being red!
-  });
+    }).compileComponents();
+});
 
   it('should create', () => {
     expect(component).toBeTruthy();

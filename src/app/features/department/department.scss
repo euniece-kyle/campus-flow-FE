@@ -8,11 +8,10 @@ $bg-color: #fffcf8;
 
 .layout { display: flex; height: 100vh; font-family: sans-serif; background: $bg-color; }
 
-// --- SIDEBAR (Matches Booking Exactly) ---
 // --- SIDEBAR ---
 .sidebar {
   width: 240px; 
-  background: $maroon !important; // Force sidebar to be Maroon
+  background: $maroon !important;
   color: white; 
   display: flex; 
   flex-direction: column;
@@ -33,7 +32,7 @@ $bg-color: #fffcf8;
   .nav {
     display: flex;
     flex-direction: column;
-    background: $maroon !important; // Force the list container to be Maroon
+    background: $maroon !important;
 
     .nav-item { 
       padding: 15px 20px; 
@@ -42,9 +41,7 @@ $bg-color: #fffcf8;
       align-items: center;
       cursor: pointer;
       transition: all 0.2s ease;
-      
-      // This is the "Nuclear" fix: 
-      // It forces the background to Maroon and kills any inherited dark colors
+
       background-color: $maroon !important; 
       color: rgba(255, 255, 255, 0.8) !important;
       
@@ -55,7 +52,6 @@ $bg-color: #fffcf8;
       }
 
       &:hover:not(.active) { 
-        // We use an overlay so it stays Maroon but looks "lit up"
         background-color: rgba(255, 255, 255, 0.1) !important; 
         color: white !important;
       }
