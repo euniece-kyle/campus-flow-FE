@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BookingService } from '../../../services/booking.service'; // Ensure this path is correct!
+import { BookingService } from '../../../../services/booking.service';
 
 interface Period {
   label: string;
@@ -22,8 +22,8 @@ export class CreateModal implements OnInit {
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
 
-  // Add constructor to inject the service
-  constructor(private bookingService: BookingService) {}
+// Inside your class:
+constructor(private bookingService: BookingService) {}
 
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
 
@@ -60,7 +60,7 @@ export class CreateModal implements OnInit {
           this.data.bookedBy = profileData.username;
         }
       },
-      error: (err) => console.error('Error fetching users:', err)
+        error: (err: any) => console.error('Error fetching users:', err)
     });
 
     // 2. Load Subjects from LocalStorage
