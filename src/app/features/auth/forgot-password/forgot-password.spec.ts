@@ -8,17 +8,15 @@ describe('ForgotPasswordComponent', () => {
   let component: ForgotPasswordComponent;
   let fixture: ComponentFixture<ForgotPasswordComponent>;
 
-  beforeEach(async () => {
+beforeEach(async () => {
     await TestBed.configureTestingModule({
-      // 1. Add these standard Angular imports
       imports: [
-        ForgotPasswordComponent, 
-        HttpClientModule, 
-        ReactiveFormsModule
+        ForgotPasswordComponent,
+        HttpClientModule,
+        ReactiveFormsModule, // <--- MAKE SURE THIS COMMA IS HERE
       ],
-      // 2. Keep your existing router provider
-      providers: [provideRouter([])] 
-    }).compileComponents();
+      providers: [provideRouter([])]
+    }).compileComponents(); // <--- This line will now stop being red!
   });
 
   it('should create', () => {
