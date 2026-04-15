@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BookingService } from '../../../../app/services/booking.service';
+import { BookingService } from '../../../services/booking.service';
 interface Period {
   label: string;
   time: string;

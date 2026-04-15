@@ -1,28 +1,25 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router'; // 1. Add RouterModule here
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { BookingComponent } from './booking';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { DatePipe } from '@angular/common';
 
-@Component({
-  selector: 'app-sidebar',
-  standalone: true,
-  imports: [
-    CommonModule, 
-    RouterModule // 2. Add RouterModule to this array
-  ],
-  templateUrl: './sidebar.html',
-  styleUrls: ['./sidebar.scss']
-})
-export class SidebarComponent {
-  constructor(private router: Router) {}
+describe('BookingComponent', () => {
+  let component: BookingComponent;
+  let fixture: ComponentFixture<BookingComponent>;
 
-  onSignOut(): void {
-    console.log('Sign out clicked'); // 3. Add this to verify the click works
-    this.router.navigate(['/login']).then(success => {
-      if (success) {
-        console.log('Navigation successful!');
-      } else {
-        console.error('Navigation failed!');
-      }
-    });
-  }
-}
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [BookingComponent, RouterTestingModule, HttpClientTestingModule],
+      providers: [DatePipe]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(BookingComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
