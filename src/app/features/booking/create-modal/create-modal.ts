@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BookingService } from '../../services/booking.service';
+import { BookingService } from '../.././services/booking.service';
 
 interface Period {
   label: string;
@@ -23,10 +23,10 @@ export class CreateModal implements OnInit {
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
 
-  // ✅ THIS MUST BE INSIDE THE CLASS BRACES
-  constructor(private bookingService: BookingService) {}
-
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
+
+  users: any[] = []; // To store names from database
+  selectedUser: string = '';
 
   data: any = {
     period: '',
@@ -47,6 +47,9 @@ export class CreateModal implements OnInit {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
+    // ✅ THIS MUST BE INSIDE THE CLASS BRACES
+  constructor(private bookingService: BookingService) {}
+
   subjects: string[] = [];
   staff: string[] = [];
 
@@ -55,13 +58,13 @@ export class CreateModal implements OnInit {
       next: (users: any[]) => {
         this.staff = users.map(u => u.username); 
         const activeProfile = localStorage.getItem('user_profile');
-        if (activeProfile) {
-          const profileData = JSON.parse(activeProfile);
-          this.data.bookedBy = profileData.username;
-        }
+        if (!this.bookedBy) {
+      this.bookedBy = "Retrieving user..."; 
+      }
       },
       error: (err: any) => console.error('Error fetching users:', err)
     });
+
 
     const savedSubjects = localStorage.getItem('campus_departments');
     if (savedSubjects) {
@@ -102,19 +105,24 @@ export class CreateModal implements OnInit {
   closeModal() {
     this.close.emit();
   }
-
-  onCreateBooking() {
-    const finalUntil = this.data.showDatePicker ? this.formatToWords(this.data.customUntilDate) : this.data.untilDate;
+onSubmit() {
+    // 1. Create the data package to send to your MySQL database
     const bookingPayload = {
       room: this.roomName,
+      date: this.selectedDate,
       type: this.selectedType,
-      bookedBy: this.data.bookedBy,
+      bookedBy: this.bookedBy, // This uses the name from your API/Input
       period: this.data.period,
+      subject: this.data.subject,
       department: this.data.department,
-      startingFrom: this.formatToWords(this.data.startDate),
-      until: finalUntil
+      startingFrom: this.data.startingFrom,
+      until: this.data.until
     };
+
+    // 2. Emit the data to the parent (booking.ts) so it can call your API
     this.create.emit(bookingPayload);
-    this.closeModal();
+    
+    // 3. Close the modal after clicking create
+    this.close.emit();
   }
 }

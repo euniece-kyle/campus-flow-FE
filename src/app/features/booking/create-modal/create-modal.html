@@ -1,4 +1,4 @@
-<div class="modal-overlay" (click)="closeModal()">
+<div class="modal-overlay" (click)="close.emit()">
   <div class="modal-content" (click)="$event.stopPropagation()">
 
     <h2 class="title">Create New <span class="highlight-text">Booking</span></h2>
@@ -71,7 +71,7 @@
     </div>
 
     <div class="button-container">
-      <button type="button" class="btn-create" (click)="onCreateBooking()">Create Booking</button>
+      <button type="button" class="btn-create" (click)="onSubmit()">Create Booking</button>
     </div>
   </div>
 </div>

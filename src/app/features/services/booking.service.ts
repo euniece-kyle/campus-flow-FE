@@ -6,7 +6,6 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class BookingService {
-  // Replace this with your actual Hono API URL
   private apiUrl = 'http://localhost:3000/api/flow'; 
 
   constructor(private http: HttpClient) {}
@@ -15,8 +14,9 @@ export class BookingService {
   getUsers(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/users`);
   }
-
-  // You might also need this for creating bookings
+  getUserProfile() {
+    return this.http.get<any>('http://localhost:3000/api/auth/profile');
+  }
   createBooking(payload: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/bookings`, payload);
   }
