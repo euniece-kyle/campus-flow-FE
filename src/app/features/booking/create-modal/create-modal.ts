@@ -18,12 +18,12 @@ interface Period {
 export class CreateModal implements OnInit {
   @Input() roomName: string = '';
   @Input() selectedDate: string = '';
+  @Input() bookedBy: string = '';
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
 
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
-  staff: string[] = []; // This stores the names from MySQL
-  bookedBy: string = ''; // Added this missing variable
+  staff: string[] = [];
 
   data: any = {
     period: '',
