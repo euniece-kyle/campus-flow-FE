@@ -18,7 +18,7 @@ $blue-link: #326284;
 // --- SIDEBAR ---
 .sidebar {
   width: 240px; 
-  background: $maroon !important; // Force sidebar to be Maroon
+  background: $maroon !important;
   color: white; 
   display: flex; 
   flex-direction: column;
@@ -39,7 +39,7 @@ $blue-link: #326284;
   .nav {
     display: flex;
     flex-direction: column;
-    background: $maroon !important; // Force the list container to be Maroon
+    background: $maroon !important;
 
     .nav-item { 
       padding: 15px 20px; 
@@ -49,8 +49,6 @@ $blue-link: #326284;
       cursor: pointer;
       transition: all 0.2s ease;
       
-      // This is the "Nuclear" fix: 
-      // It forces the background to Maroon and kills any inherited dark colors
       background-color: $maroon !important; 
       color: rgba(255, 255, 255, 0.8) !important;
       
@@ -61,7 +59,7 @@ $blue-link: #326284;
       }
 
       &:hover:not(.active) { 
-        // We use an overlay so it stays Maroon but looks "lit up"
+        
         background-color: rgba(255, 255, 255, 0.1) !important; 
         color: white !important;
       }
@@ -236,7 +234,7 @@ app-create-modal {
   font-weight: 600;
   font-size: 0.8rem;
   line-height: 1.1;
-  margin-bottom: 2px; /* Adds space so they don't touch */
+  margin-bottom: 2px;
 }
 
 .subject-tag {
