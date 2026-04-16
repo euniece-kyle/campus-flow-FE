@@ -44,7 +44,7 @@
 
       <label>Booked By:</label>
       <div class="form-value dropdown-wrapper">
-        <select [(ngModel)]="bookedBy" class="native-look">
+        <select [(ngModel)]="selectedStaff" class="native-look">
             <option *ngFor="let name of staff" [value]="name">{{ name }}</option>
         </select>
         <span class="arrow-icon">▼</span>

@@ -21,6 +21,7 @@ export class CreateModal implements OnInit {
   @Input() bookedBy: string = '';
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
+  selectedStaff: string = '';
 
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
   staff: string[] = [];
@@ -61,10 +62,13 @@ export class CreateModal implements OnInit {
         } else {
           this.bookedBy = "Guest"; 
         }
+
+        this.selectedStaff = this.bookedBy;
       },
       error: (err: any) => {
         console.error('Error fetching users:', err);
         this.bookedBy = "Guest";
+        this.selectedStaff = "Guest";
       }
     });
 
@@ -120,8 +124,8 @@ onSubmit() {
       startingFrom: this.formatToWords(this.data.startDate),
       until: finalUntil
     };
-
-    this.create.emit(bookingPayload);
+    this.data.bookedBy = this.selectedStaff;
+    this.create.emit(this.data);
     this.close.emit();
   }
 }
