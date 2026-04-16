@@ -56,10 +56,10 @@ ngOnInit() {
   // Use the correct prefix from your index.ts
   this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
     next: (data) => {
-      console.log('Successfully fetched users:', data);
-      this.staff = data; // This fills the list from MySQL
+      this.staff = data;
+      console.log('Names loaded from DB:', this.staff);
     },
-    error: (err) => console.error('Still getting an error? Check the URL:', err)
+    error: (err) => console.error('Connection failed:', err)
   });
 
   // Keep your existing logic for the logged-in user
