@@ -48,24 +48,27 @@ export class CreateModal implements OnInit {
 
   constructor(private bookingService: BookingService, private http: HttpClient) {}
 
-  ngOnInit() {
-    // 1. FETCH STAFF LIST from MySQL (Fixes the red error in HTML)
-    this.http.get<any[]>('http://localhost:3000/api/flow/users').subscribe({
-      next: (users) => {
-        this.staff = users.map(u => u.username);
-      },
-      error: (err) => console.error('Could not load staff list', err)
-    });
+ // Add this inside your ngOnInit() function
+ngOnInit() {
+  // 1. Fetch the list of users from your Hono backend
+  this.http.get<any[]>('http://localhost:3000/api/flow/users').subscribe({
+    next: (users) => {
+      // Extract just the 'username' from each database row
+      this.staff = users.map(user => user.username);
+      console.log('Staff list loaded:', this.staff);
+    },
+    error: (err) => console.error('Failed to load names from database:', err)
+  });
 
-    // 2. AUTOMATICALLY retrieve logged-in user name from profile storage
-    const activeProfile = localStorage.getItem('user_profile');
-    if (activeProfile) {
-      const user = JSON.parse(activeProfile);
-      this.bookedBy = `${user.firstName} ${user.lastName}`; 
-    } else {
-      this.bookedBy = "Guest"; 
-    }
-    this.selectedStaff = this.bookedBy;
+  // 2. Keep your existing logic for the "Automatically Appear" name
+  const activeProfile = localStorage.getItem('user_profile');
+  if (activeProfile) {
+    const user = JSON.parse(activeProfile);
+    this.bookedBy = `${user.firstName} ${user.lastName}`; 
+  } else {
+    this.bookedBy = "Guest"; 
+  }
+  this.selectedStaff = this.bookedBy;
 
     // 3. Set Date defaults
     const d = new Date(this.selectedDate);
