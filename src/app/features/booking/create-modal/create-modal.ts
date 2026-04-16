@@ -23,10 +23,10 @@ export class CreateModal implements OnInit {
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
   
-  selectedStaff: string = '';
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
   subjects: string[] = [];
-  staff: string[] = []; // This array must exist for the HTML to work!
+  staff: any[] = []; // If this is missing, the frontend can't store the names!
+  selectedStaff: string = ''; // This array must exist for the HTML to work!
 
   data: any = {
     period: '',
@@ -48,23 +48,25 @@ export class CreateModal implements OnInit {
 
   constructor(private bookingService: BookingService, private http: HttpClient) {}
 
- // Add this inside your ngOnInit() function
+// 1. At the top of your class, ensure staff is an array
+staff: any[] = []; 
+
+// 2. Inside your ngOnInit()
 ngOnInit() {
-  // 1. Fetch the list of users from your Hono backend
-  this.http.get<any[]>('http://localhost:3000/api/flow/users').subscribe({
-    next: (users) => {
-      // Extract just the 'username' from each database row
-      this.staff = users.map(user => user.username);
-      console.log('Staff list loaded:', this.staff);
+  // Use the correct prefix from your index.ts
+  this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
+    next: (data) => {
+      console.log('Successfully fetched users:', data);
+      this.staff = data; // This fills the list from MySQL
     },
-    error: (err) => console.error('Failed to load names from database:', err)
+    error: (err) => console.error('Still getting an error? Check the URL:', err)
   });
 
-  // 2. Keep your existing logic for the "Automatically Appear" name
+  // Keep your existing logic for the logged-in user
   const activeProfile = localStorage.getItem('user_profile');
   if (activeProfile) {
     const user = JSON.parse(activeProfile);
-    this.bookedBy = `${user.firstName} ${user.lastName}`; 
+    this.selectedStaff = user.username || `${user.firstName} ${user.lastName}`;
   } else {
     this.bookedBy = "Guest"; 
   }
