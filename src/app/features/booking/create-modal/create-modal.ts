@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { BookingService } from '../.././services/booking.service';
 
 interface Period {
@@ -21,10 +22,11 @@ export class CreateModal implements OnInit {
   @Input() bookedBy: string = '';
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
+  
   selectedStaff: string = '';
-
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
-  staff: string[] = [];
+  subjects: string[] = [];
+  staff: string[] = []; // This array must exist for the HTML to work!
 
   data: any = {
     period: '',
@@ -44,48 +46,60 @@ export class CreateModal implements OnInit {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
-  constructor(private bookingService: BookingService) {}
-
-  subjects: string[] = [];
+  constructor(private bookingService: BookingService, private http: HttpClient) {}
 
   ngOnInit() {
-    // DATA INTEGRATION: Fetching names from MySQL via the Service
-    this.bookingService.getUsers().subscribe({
-      next: (users: any[]) => {
-        this.staff = users.map(u => u.username); 
-        
-        // AUTO-FILL: If a user is logged in, use their name as default
-        const activeProfile = localStorage.getItem('user_profile');
-        if (activeProfile) {
-          const user = JSON.parse(activeProfile);
-          this.bookedBy = user.username || "Guest";
-        } else {
-          this.bookedBy = "Guest"; 
-        }
-
-        this.selectedStaff = this.bookedBy;
+    // 1. FETCH STAFF LIST from MySQL (Fixes the red error in HTML)
+    this.http.get<any[]>('http://localhost:3000/api/flow/users').subscribe({
+      next: (users) => {
+        this.staff = users.map(u => u.username);
       },
-      error: (err: any) => {
-        console.error('Error fetching users:', err);
-        this.bookedBy = "Guest";
-        this.selectedStaff = "Guest";
-      }
+      error: (err) => console.error('Could not load staff list', err)
     });
 
-    const savedSubjects = localStorage.getItem('campus_departments');
-    if (savedSubjects) {
-      this.subjects = JSON.parse(savedSubjects);
+    // 2. AUTOMATICALLY retrieve logged-in user name from profile storage
+    const activeProfile = localStorage.getItem('user_profile');
+    if (activeProfile) {
+      const user = JSON.parse(activeProfile);
+      this.bookedBy = `${user.firstName} ${user.lastName}`; 
     } else {
-      this.subjects = ['Art', 'Math', 'Science', 'History'];
+      this.bookedBy = "Guest"; 
     }
+    this.selectedStaff = this.bookedBy;
 
+    // 3. Set Date defaults
     const d = new Date(this.selectedDate);
-    let finalDate = d;
-    if (isNaN(d.getTime())) { finalDate = new Date(); }
+    const finalDate = isNaN(d.getTime()) ? new Date() : d;
+    this.data.startDate = this.toISODate(finalDate);
+    this.data.customUntilDate = this.data.startDate;
 
-    const isoDate = this.toISODate(finalDate);
-    this.data.startDate = isoDate;
-    this.data.customUntilDate = isoDate;
+    // 4. Load Subjects/Departments
+    const savedSubjects = localStorage.getItem('campus_departments');
+    this.subjects = savedSubjects ? JSON.parse(savedSubjects) : ['Art', 'Math', 'Science'];
+  }
+
+  onSubmit() {
+    const bookingPayload = {
+      room: this.roomName,
+      date: this.selectedDate,
+      period: this.data.period,
+      subject: this.data.department,
+      bookedBy: this.selectedStaff // Sends the automatically retrieved name
+    };
+
+    // CALL THE INSERT API TO SAVE TO MYSQL
+    this.http.post('http://localhost:3000/api/flow/create', bookingPayload)
+      .subscribe({
+        next: (response: any) => {
+          console.log('Successfully saved to MySQL!', response);
+          this.create.emit(bookingPayload);
+          this.close.emit();
+        },
+        error: (err) => {
+          console.error('MySQL Insert Failed:', err);
+          alert('Error saving to database!');
+        }
+      });
   }
 
   toISODate(date: Date): string {
@@ -95,11 +109,8 @@ export class CreateModal implements OnInit {
   }
 
   formatToWords(dateStr: string): string {
-    if (!dateStr) return '';
     const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return d.toLocaleDateString('en-US', options);
+    return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   }
 
   onUntilChange() {
@@ -107,25 +118,6 @@ export class CreateModal implements OnInit {
   }
 
   closeModal() {
-    this.close.emit();
-  }
-onSubmit() {
-    const finalUntil = this.selectedType === 'Recurring' 
-      ? (this.data.showDatePicker ? this.formatToWords(this.data.customUntilDate) : this.data.untilDate)
-      : 'One-Time';
-
-    const bookingPayload = {
-      room: this.roomName,
-      date: this.selectedDate,
-      type: this.selectedType,
-      bookedBy: this.bookedBy,
-      period: this.data.period,
-      subject: this.data.department,
-      startingFrom: this.formatToWords(this.data.startDate),
-      until: finalUntil
-    };
-    this.data.bookedBy = this.selectedStaff;
-    this.create.emit(this.data);
     this.close.emit();
   }
 }
