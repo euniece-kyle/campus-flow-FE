@@ -1,4 +1,4 @@
-<div class="layout">
+<div class="layout">  //UPDATE DASHBOARD
   <aside class="sidebar">
     <div class="brand">
       <div class="logo-container">
@@ -71,20 +71,82 @@
           <p>Available Now</p>
         </div>
       </div>
+    </div>
 
-      <div class="stat-card">
-        <div class="icon-circle blue-light-bg">📅</div>
-        <div class="stat-info">
-          <h3>{{ dailyTotal }}</h3>
-          <p>Daily Sessions</p>
+    <div class="charts-section" style="margin-top: 30px;">
+      <h2 style="font-size: 1.2rem; margin-bottom: 20px; color: #f5a81c; padding-left: 10px; border-left: 4px solid maroon;">Analytics Overview</h2>
+      
+      <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
+        
+        <div class="chart-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h4 style="margin: 0; color: #700000; font-size: 0.9rem; text-transform: uppercase;">Booking Trends</h4>
+            
+            <div class="range-controls" style="display: flex; gap: 5px; background: #f5f5f5; padding: 2px; border-radius: 6px;">
+              <button (click)="changeDateRange(7)" 
+                [style.background]="currentDateRange === 7 ? 'white' : 'transparent'"
+                [style.box-shadow]="currentDateRange === 7 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
+                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">7D</button>
+              <button (click)="changeDateRange(30)" 
+                [style.background]="currentDateRange === 30 ? 'white' : 'transparent'"
+                [style.box-shadow]="currentDateRange === 30 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
+                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">30D</button>
+              <button (click)="changeDateRange(0)" 
+                [style.background]="currentDateRange === 0 ? 'white' : 'transparent'"
+                [style.box-shadow]="currentDateRange === 0 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
+                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">ALL</button>
+            </div>
+          </div>
+
+          <div class="chart-scroll-container" style="width: 100%; overflow-x: auto; overflow-y: hidden;">
+            <div class="chart-canvas-wrapper" [style.width.%]="currentDateRange === 0 ? 200 : 100" style="height: 250px; min-width: 100%;">
+              <canvas baseChart
+                [data]="lineChartData"
+                [options]="lineChartOptions"
+                [type]="'line'">
+              </canvas>
+            </div>
+          </div>
         </div>
+
+        <div class="chart-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h4 style="margin: 0; color: #700000; font-size: 0.9rem; text-transform: uppercase;">Building Utilization</h4>
+            
+            <div class="range-controls" style="display: flex; gap: 5px; background: #f5f5f5; padding: 2px; border-radius: 6px;">
+              <button (click)="changeDateRange(7)" 
+                [style.background]="currentDateRange === 7 ? 'white' : 'transparent'"
+                [style.box-shadow]="currentDateRange === 7 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
+                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">7D</button>
+              <button (click)="changeDateRange(30)" 
+                [style.background]="currentDateRange === 30 ? 'white' : 'transparent'"
+                [style.box-shadow]="currentDateRange === 30 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
+                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">30D</button>
+              <button (click)="changeDateRange(0)" 
+                [style.background]="currentDateRange === 0 ? 'white' : 'transparent'"
+                [style.box-shadow]="currentDateRange === 0 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
+                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">ALL</button>
+            </div>
+          </div>
+
+          <div class="chart-scroll-container" style="width: 100%; overflow-x: auto; overflow-y: hidden;">
+            <div class="chart-canvas-wrapper" [style.width.%]="currentDateRange === 0 ? 200 : 100" style="height: 250px; min-width: 100%;">
+              <canvas baseChart
+                [data]="barChartData"
+                [options]="barChartOptions"
+                [type]="'bar'">
+              </canvas>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <div class="details-panel" *ngIf="isListVisible" style="margin-top: 20px; animation: fadeIn 0.3s ease;">
+    <div class="details-panel" *ngIf="isListVisible" style="margin-top: 30px; animation: fadeIn 0.3s ease;">
       <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h2 style="font-size: 1.2rem; color: #333;">Live Booking Details (Today)</h2>
-        <button (click)="clearAllBookings()" style="background: #fff0f0; color: #ff4d4d; border: 1px solid #ffcccc; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Clear All</button>
+        <h2 style="font-size: 1.2rem; color: maroon;">Live Booking Details</h2>
+        <button (click)="clearAllBookings()" style="background: #fff0f0; color: #ff4d4d; border: 1px solid #ffcccc; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Clear All Data</button>
       </div>
 
       <div class="booking-list" style="display: grid; gap: 10px;">
@@ -98,14 +160,14 @@
             <span style="font-size: 0.85rem; color: #666;">{{ b.period }}</span>
           </div>
           <div style="text-align: right;">
-            <span style="font-size: 0.9rem; color: #444; display: block;">{{ b.reservedBy || 'Faculty User' }}</span>
-            <span style="font-size: 0.75rem; background: #f0f0f0; padding: 2px 8px; border-radius: 10px;">Confirmed</span>
+            <span style="font-size: 0.9rem; color: #444; display: block;">{{ b.bookedBy || 'Faculty User' }}</span>
+            <span style="font-size: 0.75rem; background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 10px;">Confirmed</span>
           </div>
         </div>
       </div>
     </div>
     
-    <div class="hero-section" *ngIf="!isListVisible">
+    <div class="hero-section" style="margin-top: 30px;" *ngIf="!isListVisible">
         <div class="hero-content">
             <h2>Streamlining Campus Space</h2>
             <p>
