@@ -50,6 +50,11 @@ export class BookingComponent implements OnInit {
     this.loadBookings();
   }
 
+  getPeriodTime(periodLabel: string): string {
+    const period = this.periods.find(p => p.label === periodLabel);
+    return period ? period.time : '';
+  }
+
   loadBookings() {
     this.http.get<any[]>('http://localhost:3000/api/bookings').subscribe({
       next: (data) => {
@@ -61,14 +66,12 @@ export class BookingComponent implements OnInit {
   }
 
   handleNewBooking(bookingData: any) {
-    // Refresh list after a new booking is created via the modal
     this.loadBookings();
     this.isModalOpen = false;
   }
 
   confirmCancel() {
     if (!this.selectedBooking || !this.selectedBooking.id) return;
-
     this.http.delete(`http://localhost:3000/api/bookings/${this.selectedBooking.id}`).subscribe({
       next: () => {
         this.loadBookings();
@@ -87,7 +90,7 @@ export class BookingComponent implements OnInit {
   }
 
   getBooking(room: string, periodLabel: string) {
-    const formattedDate = this.dateForInput; // YYYY-MM-DD
+    const formattedDate = this.dateForInput;
     return this.savedBookings.find(b =>
       b.room_name === room &&
       b.period === periodLabel &&

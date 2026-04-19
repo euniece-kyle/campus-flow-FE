@@ -13,6 +13,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http'; // Added ba
 })
 export class ProfileComponent implements OnInit {
   user: any = {
+    id: null,
     firstName: '',
     lastName: '',
     email: '',
@@ -70,17 +71,25 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  saveUserData() {
+saveUserData() {
     this.updateInitials();
     
-    // Update local session immediately
-    localStorage.setItem('currentUser', JSON.stringify(this.user));
-    
-    // Here is where you'd call the backend to persist changes
-    // this.http.patch(`${this.apiUrl}/${this.user.id}`, this.user).subscribe(...)
-    
-    this.isEditing = false;
-    alert('Profile updated successfully!');
+    // THE FIX: Added (any) to updatedUser to solve the TS2696 error in your terminal
+    this.http.patch(`${this.apiUrl}/${this.user.id}`, this.user).subscribe({
+      next: (updatedUser: any) => {
+        this.user = updatedUser;
+        localStorage.setItem('currentUser', JSON.stringify(this.user));
+        this.isEditing = false;
+        alert('Profile updated successfully!');
+      },
+      error: (err) => {
+        console.error('Update failed', err);
+        // Fallback: update local storage anyway so the UI stays in sync
+        localStorage.setItem('currentUser', JSON.stringify(this.user));
+        this.isEditing = false;
+        alert('Profile updated locally!');
+      }
+    });
   }
 
   cancelEdit() {
@@ -116,13 +125,19 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    // Success: Update and Save
-    this.user.password = this.passwordData.new;
-    this.saveUserData(); 
-    this.generatePasswordHint();
+// Prepare password update payload
+    const payload = { password: this.passwordData.new };
     
-    alert('Password updated successfully!');
-    this.resetPasswordForm();
+    this.http.patch(`${this.apiUrl}/${this.user.id}/password`, payload).subscribe({
+      next: () => {
+        this.user.password = this.passwordData.new;
+        localStorage.setItem('currentUser', JSON.stringify(this.user));
+        this.generatePasswordHint();
+        alert('Password updated successfully!');
+        this.resetPasswordForm();
+      },
+      error: () => alert('Failed to update password on the server.')
+    });
   }
 
   resetPasswordForm() {
