@@ -80,11 +80,11 @@
             <div class="white-box" 
                  (click)="openBookingModal(room, p.label)"
                  [ngClass]="{
-                   'booked-one-time': getBooking(room, p.label)?.type === 'One-Time',
-                   'booked-recurring': getBooking(room, p.label)?.type === 'Recurring'
+                   'booked-one-time': getBooking(room, p.label)?.booking_type === 'One-Time',
+                   'booked-recurring': getBooking(room, p.label)?.booking_type === 'Recurring'
                  }">
               <div class="booking-inner-content" *ngIf="getBooking(room, p.label) as booking">
-                <div class="teacher-name">{{ booking.bookedBy }}</div>
+                <div class="teacher-name">{{ booking.booked_by }}</div>
                 <div class="subject-tag">{{ booking.subject }}</div>
               </div>
               </div>
@@ -99,20 +99,20 @@
       <button class="close-x-btn" (click)="closeView()">✕</button>
 
       <h2 class="drawer-title">Booking <span class="highlight">Information</span></h2>
-      <h3 class="room-header">{{ selectedBooking?.room }}</h3>
+      <h3 class="room-header">{{ selectedBooking?.room_name }}</h3>
 
       <div class="info-table">
         <div class="info-row gray-bg">
           <span class="label">Date:</span>
-          <span class="value">{{ selectedDate | date:'EEEE, MMMM d, yyyy' }}</span>
+          <span class="value">{{ selectedBooking?.booking_date | date:'EEEE, MMMM d, yyyy' }}</span>
         </div>
         <div class="info-row">
           <span class="label">Occurs:</span>
-          <span class="value">{{ selectedBooking?.type }}</span>
+          <span class="value">{{ selectedBooking?.booking_type }}</span>
         </div>
         <div class="info-row gray-bg">
           <span class="label">Period:</span>
-          <span class="value">{{ selectedBooking?.period }} ({{ getPeriodTime(selectedBooking?.period) }})</span>
+          <span class="value">{{ selectedBooking?.period }}</span>
         </div>
         
         <div class="info-row">
@@ -122,19 +122,8 @@
 
         <div class="info-row gray-bg">
           <span class="label">Booked by:</span>
-          <span class="value">{{ selectedBooking?.bookedBy }}</span>
+          <span class="value">{{ selectedBooking?.booked_by }}</span>
         </div>
-
-        <ng-container *ngIf="selectedBooking?.type === 'Recurring'">
-          <div class="info-row">
-            <span class="label">Starting from:</span>
-            <span class="value">{{ selectedBooking?.startingFrom }}</span>
-          </div>
-          <div class="info-row gray-bg">
-            <span class="label">Until:</span>
-            <span class="value">{{ selectedBooking?.until }}</span>
-          </div>
-        </ng-container>
       </div>
 
       <div class="cancel-action-container">
@@ -143,7 +132,7 @@
         </button>
 
         <div class="confirm-popup-card" *ngIf="showCancelConfirm">
-          <p class="confirm-msg">Cancel {{ selectedBooking?.type | lowercase }} booking?</p>
+          <p class="confirm-msg">Cancel {{ selectedBooking?.booking_type | lowercase }} booking?</p>
           <button class="btn-confirm-yes" (click)="confirmCancel()">Yes, cancel booking</button>
           <div class="no-keep-link">
               <span (click)="showCancelConfirm = false">No, keep it</span>
@@ -157,7 +146,7 @@
 <app-create-modal 
   *ngIf="isModalOpen" 
   [roomName]="targetRoom"
-  [selectedDate]="(selectedDate | date:'EEEE, MMMM d, yyyy') ?? ''"
+  [selectedDate]="dateForInput"
   [bookedBy]="currentUserDisplayName" 
   (close)="closeModal()"
   (create)="handleNewBooking($event)">

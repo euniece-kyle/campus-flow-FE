@@ -1,7 +1,5 @@
-// 1. Modern Sass Modules
 @use "sass:color";
 
-// --- VARIABLES ---
 $maroon: #4a0000;
 $red-banner: #8b0000;
 $blue-tab: #326284;
@@ -13,9 +11,6 @@ $blue-link: #326284;
 
 .layout { display: flex; height: 100vh; font-family: sans-serif; background: #fffcf8; }
 
-// --- SIDEBAR ---
-// --- SIDEBAR ---
-// --- SIDEBAR ---
 .sidebar {
   width: 240px; 
   background: $maroon !important;
@@ -48,7 +43,6 @@ $blue-link: #326284;
       align-items: center;
       cursor: pointer;
       transition: all 0.2s ease;
-      
       background-color: $maroon !important; 
       color: rgba(255, 255, 255, 0.8) !important;
       
@@ -59,7 +53,6 @@ $blue-link: #326284;
       }
 
       &:hover:not(.active) { 
-        
         background-color: rgba(255, 255, 255, 0.1) !important; 
         color: white !important;
       }
@@ -80,9 +73,9 @@ $blue-link: #326284;
     }
   }
 }
+
 .main { flex: 1; padding: 30px; overflow-y: auto; }
 
-// --- GRID & BOXES ---
 .booking-grid {
   width: 100%; border-spacing: 12px; border-collapse: separate;
   th { font-size: 0.75rem; font-weight: normal; color: #444; }
@@ -110,7 +103,6 @@ $blue-link: #326284;
   }
 }
 
-// --- DRAWER (BOOKING INFORMATION) ---
 .drawer-overlay {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background: rgba(0, 0, 0, 0.2); z-index: 1000;
@@ -159,7 +151,6 @@ $blue-link: #326284;
   }
 }
 
-// --- CANCELLATION POPUP ---
 .confirm-popup-card {
   position: absolute; 
   bottom: 0; 
@@ -194,7 +185,6 @@ $blue-link: #326284;
   }
 }
 
-// --- CALENDAR & TABS ---
 .calendar-box {
   position: relative; display: inline-flex; align-items: center; gap: 40px;
   padding: 8px 15px; border: 1px solid #ccc; background: white; border-radius: 4px;
@@ -214,7 +204,6 @@ $blue-link: #326284;
   .inactive-yellow { background: $yellow-tab; }
 }
 
-// --- MODAL WRAPPERS ---
 app-create-modal {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   z-index: 99999 !important; pointer-events: none;

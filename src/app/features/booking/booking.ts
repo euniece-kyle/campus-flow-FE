@@ -2,14 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router'; 
+import { HttpClient } from '@angular/common/http';
 import { CreateModal } from './create-modal/create-modal';
-import { RoomService } from '../services/room.service'; // Path fixed
+import { RoomService } from '../services/room.service';
 
 @Component({
   selector: 'app-booking',
   standalone: true,
   imports: [CommonModule, FormsModule, CreateModal, RouterModule],
-  templateUrl: './booking.html', // Point to the correct HTML file
+  templateUrl: './booking.html',
   styleUrls: ['./booking.scss'],
   providers: [DatePipe]
 })
@@ -38,50 +39,46 @@ export class BookingComponent implements OnInit {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
-  constructor(public router: Router, private roomService: RoomService) {}
+  constructor(
+    public router: Router, 
+    private roomService: RoomService,
+    private http: HttpClient
+  ) {}
 
   ngOnInit() {
     this.selectedDate.setHours(0,0,0,0);
-    const saved = localStorage.getItem('campus_bookings');
-    if (saved) {
-      this.savedBookings = JSON.parse(saved);
-    }
-    this.syncService();
+    this.loadBookings();
   }
 
-  getPeriodTime(label: string | undefined): string {
-    if (!label) return '';
-    const p = this.periods.find(period => period.label === label);
-    return p ? p.time : '';
-  }
-
-  private saveToStorage() {
-    localStorage.setItem('campus_bookings', JSON.stringify(this.savedBookings));
-    this.syncService(); 
-  }
-
-  private syncService() {
-    this.roomService.updateBookings(this.savedBookings);
+  loadBookings() {
+    this.http.get<any[]>('http://localhost:3000/api/bookings').subscribe({
+      next: (data) => {
+        this.savedBookings = data;
+        this.roomService.updateBookings(data);
+      },
+      error: (err) => console.error('Failed to load bookings from API', err)
+    });
   }
 
   handleNewBooking(bookingData: any) {
-    const newBooking = {
-      ...bookingData,
-      room: this.targetRoom,     
-      period: this.targetPeriod, 
-      dateKey: this.selectedDate.toDateString(),
-      createdAt: new Date().toISOString()
-    };
-
-    this.savedBookings.push(newBooking);
-    this.saveToStorage(); 
+    // Refresh list after a new booking is created via the modal
+    this.loadBookings();
     this.isModalOpen = false;
   }
 
   confirmCancel() {
-    this.savedBookings = this.savedBookings.filter(b => b !== this.selectedBooking);
-    this.saveToStorage(); 
-    this.closeView();
+    if (!this.selectedBooking || !this.selectedBooking.id) return;
+
+    this.http.delete(`http://localhost:3000/api/bookings/${this.selectedBooking.id}`).subscribe({
+      next: () => {
+        this.loadBookings();
+        this.closeView();
+      },
+      error: (err) => {
+        console.error('Delete failed:', err);
+        alert('Could not cancel booking. Please check backend connection.');
+      }
+    });
   }
 
   get rooms(): string[] {
@@ -90,10 +87,11 @@ export class BookingComponent implements OnInit {
   }
 
   getBooking(room: string, periodLabel: string) {
+    const formattedDate = this.dateForInput; // YYYY-MM-DD
     return this.savedBookings.find(b =>
-      b.room === room &&
+      b.room_name === room &&
       b.period === periodLabel &&
-      b.dateKey === this.selectedDate.toDateString()
+      b.booking_date.startsWith(formattedDate)
     );
   }
 
