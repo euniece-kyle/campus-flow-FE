@@ -25,8 +25,10 @@ export class CreateModal implements OnInit {
   
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
   subjects: string[] = [];
-  staff: any[] = []; // If this is missing, the frontend can't store the names!
-  selectedStaff: string = ''; // This array must exist for the HTML to work!
+  
+  // ONE declaration for staff and selectedStaff
+  staff: any[] = []; 
+  selectedStaff: string = ''; 
 
   data: any = {
     period: '',
@@ -48,29 +50,25 @@ export class CreateModal implements OnInit {
 
   constructor(private bookingService: BookingService, private http: HttpClient) {}
 
-// 1. At the top of your class, ensure staff is an array
-staff: any[] = []; 
+  ngOnInit() {
+    // 1. Fetch staff from the API
+    this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
+      next: (data) => {
+        this.staff = data;
+        console.log('Names loaded from DB:', this.staff);
+      },
+      error: (err) => console.error('Connection failed:', err)
+    });
 
-// 2. Inside your ngOnInit()
-ngOnInit() {
-  // Use the correct prefix from your index.ts
-  this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
-    next: (data) => {
-      this.staff = data;
-      console.log('Names loaded from DB:', this.staff);
-    },
-    error: (err) => console.error('Connection failed:', err)
-  });
-
-  // Keep your existing logic for the logged-in user
-  const activeProfile = localStorage.getItem('user_profile');
-  if (activeProfile) {
-    const user = JSON.parse(activeProfile);
-    this.selectedStaff = user.username || `${user.firstName} ${user.lastName}`;
-  } else {
-    this.bookedBy = "Guest"; 
-  }
-  this.selectedStaff = this.bookedBy;
+    // 2. Set the default logged-in user
+    const activeProfile = localStorage.getItem('user_profile');
+    if (activeProfile) {
+      const user = JSON.parse(activeProfile);
+      // This sets the initial dropdown value
+      this.selectedStaff = user.username || `${user.firstName} ${user.lastName}`;
+    } else {
+      this.selectedStaff = this.bookedBy || "Guest"; 
+    }
 
     // 3. Set Date defaults
     const d = new Date(this.selectedDate);
@@ -89,10 +87,9 @@ ngOnInit() {
       date: this.selectedDate,
       period: this.data.period,
       subject: this.data.department,
-      bookedBy: this.selectedStaff // Sends the automatically retrieved name
+      bookedBy: this.selectedStaff 
     };
 
-    // CALL THE INSERT API TO SAVE TO MYSQL
     this.http.post('http://localhost:3000/api/flow/create', bookingPayload)
       .subscribe({
         next: (response: any) => {
