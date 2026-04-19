@@ -76,13 +76,12 @@
           </div>
           <div class="input-group full-width">
             <label>Email Address</label>
-            <input type="email" [(ngModel)]="user.email" [disabled]="!isEditing">
-          </div>
+            <input type="email" [(ngModel)]="user.email" disabled> </div>
         </div>
       </div>
       
       <div class="card-footer" *ngIf="isEditing">
-        <button class="btn-save-3d" (click)="toggleEdit()">Done</button>
+        <button class="btn-save-3d" (click)="saveUserData()">Done</button>
       </div>
     </div>
 

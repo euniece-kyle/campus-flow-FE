@@ -2,16 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { HttpClient, HttpClientModule } from '@angular/common/http'; // Added back to fix errors
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule], // Added HttpClientModule
   templateUrl: './profile.html',
   styleUrls: ['./profile.scss']
 })
 export class ProfileComponent implements OnInit {
-  user = {
+  user: any = {
     firstName: '',
     lastName: '',
     email: '',
@@ -27,13 +28,17 @@ export class ProfileComponent implements OnInit {
   passwordData = { current: '', new: '', confirm: '' };
   showPassword = { current: false, new: false, confirm: false };
 
-  constructor(public router: Router) {}
+  // This matches your backend apiUrl
+  private apiUrl = 'http://localhost:3000/api/users';
+
+  constructor(public router: Router, private http: HttpClient) {} // Injected HttpClient
 
   ngOnInit() {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       this.user = JSON.parse(savedUser);
       this.generatePasswordHint();
+      this.updateInitials();
     } else {
       this.router.navigate(['/login']);
     }
@@ -51,37 +56,37 @@ export class ProfileComponent implements OnInit {
     }
   }
 
+  updateInitials() {
+    const first = this.user.firstName?.trim().charAt(0) || '';
+    const last = this.user.lastName?.trim().charAt(0) || '';
+    this.user.initials = (first + last).toUpperCase();
+  }
+
   toggleEdit() {
     if (!this.isEditing) {
-      this.userBackup = { ...this.user };
+      // Create a deep copy so we can cancel changes
+      this.userBackup = JSON.parse(JSON.stringify(this.user));
       this.isEditing = true;
-    } else {
-      const first = this.user.firstName.trim().charAt(0) || '';
-      const last = this.user.lastName.trim().charAt(0) || '';
-      this.user.initials = (first + last).toUpperCase();
-      
-      this.saveUserData();
-      this.isEditing = false;
     }
   }
 
   saveUserData() {
-    // 1. Update Session
-    localStorage.setItem('currentUser', JSON.stringify(this.user));
-
-    // 2. Update "Database"
-    const allUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    const userIndex = allUsers.findIndex((u: any) => u.email === this.user.email);
+    this.updateInitials();
     
-    if (userIndex !== -1) {
-      allUsers[userIndex] = { ...this.user };
-      localStorage.setItem('registeredUsers', JSON.stringify(allUsers));
-    }
+    // Update local session immediately
+    localStorage.setItem('currentUser', JSON.stringify(this.user));
+    
+    // Here is where you'd call the backend to persist changes
+    // this.http.patch(`${this.apiUrl}/${this.user.id}`, this.user).subscribe(...)
+    
+    this.isEditing = false;
+    alert('Profile updated successfully!');
   }
 
   cancelEdit() {
     if (this.userBackup) {
-      this.user = { ...this.userBackup };
+      // Restore from backup
+      this.user = JSON.parse(JSON.stringify(this.userBackup));
     }
     this.isEditing = false;
   }
@@ -113,7 +118,7 @@ export class ProfileComponent implements OnInit {
 
     // Success: Update and Save
     this.user.password = this.passwordData.new;
-    this.saveUserData(); // This keeps the database in sync
+    this.saveUserData(); 
     this.generatePasswordHint();
     
     alert('Password updated successfully!');
