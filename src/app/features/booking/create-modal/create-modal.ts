@@ -17,7 +17,7 @@ export class CreateModal implements OnInit {
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
   
-  // FIX: Added back for the 'One-Time' vs 'Recurring' toggle in HTML
+  // FIX: Restore 'selectedType' for the toggle buttons in your template
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
   
   staff: any[] = []; 
@@ -27,8 +27,8 @@ export class CreateModal implements OnInit {
   data: any = {
     period: '',
     department: '', 
-    untilDate: 'Ending of session', // Added back for template binding
-    showDatePicker: false          // Added back for template binding
+    untilDate: 'Ending of session', // Restored for [(ngModel)]
+    showDatePicker: false          // Restored for *ngIf
   };
 
   periods = [
@@ -43,11 +43,13 @@ export class CreateModal implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
+    // Fetch staff list from backend
     this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
       next: (data) => { this.staff = data; },
       error: (err) => console.error('Connection failed:', err)
     });
 
+    // Auto-fill staff from profile
     const activeProfile = localStorage.getItem('user_profile');
     if (activeProfile) {
       const user = JSON.parse(activeProfile);
@@ -57,30 +59,33 @@ export class CreateModal implements OnInit {
     }
   }
 
-  // FIX: Added back to handle the "Recurring" date picker logic in HTML
+  // FIX: Restore 'onUntilChange' for the date picker change event
   onUntilChange() {
     this.data.showDatePicker = (this.data.untilDate === 'Pick Date');
   }
 
   onSubmit() {
+    // Payload keys match the destructuring in flow.route.ts
     const bookingPayload = {
       room: this.roomName,
       date: this.selectedDate,
       period: this.data.period,
       subject: this.data.department,
-      bookedBy: this.selectedStaff 
+      bookedBy: this.selectedStaff,
+      bookingType: this.selectedType,
+      untilDate: this.data.untilDate === 'Ending of session' ? null : this.data.untilDate
     };
 
     this.http.post('http://localhost:3000/api/create', bookingPayload)
       .subscribe({
         next: (response: any) => {
-          alert('Booking saved to MySQL!');
+          alert('Booking saved to MySQL!'); // Success feedback
           this.create.emit(bookingPayload);
           this.close.emit();
         },
         error: (err) => {
           console.error('Frontend Error:', err);
-          alert('Error saving to database! Check backend terminal.');
+          alert('Error saving to database! Check your backend terminal for red text.');
         }
       });
   }
