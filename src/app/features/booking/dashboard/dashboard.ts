@@ -1,13 +1,11 @@
-import { Component, OnInit, inject, ViewChild } from '@angular/core';   //UPDATE TS
+import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { RoomService } from '../../services/room.service'; 
+import { RoomService } from '../../services/room.service'; // Path adjusted for folder depth
 
-// --- 1. Import Chart.js core and Registerables ---
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables, ChartConfiguration, ChartOptions } from 'chart.js';
 
-// --- 2. Manually Register scales and elements to fix "linear" error ---
 Chart.register(...registerables);
 
 @Component({
@@ -18,7 +16,7 @@ Chart.register(...registerables);
   styleUrls: ['./dashboard.scss']
 })
 export class DashboardComponent implements OnInit {
-  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
+  @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
 
   buildings: string[] = ['SAC', 'NAC', 'WAC', 'EAC'];
   roomsPerBuilding: number = 5;
@@ -32,13 +30,11 @@ export class DashboardComponent implements OnInit {
   todaysBookings: any[] = [];     
   isListVisible: boolean = false; 
 
-  // --- Chart Navigation State ---
   currentDateRange: number = 7; 
   private allSystemBookings: any[] = []; 
 
   private roomService = inject(RoomService);
 
-  // --- LINE CHART CONFIGURATION ---
   public lineChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
     datasets: [
@@ -47,12 +43,10 @@ export class DashboardComponent implements OnInit {
         label: 'Booking Volume',
         fill: true,
         tension: 0.4,
-        borderColor: '#8b0000',           // Maroon
+        borderColor: '#8b0000',
         backgroundColor: 'rgba(152, 8, 8, 0.15)', 
         pointBackgroundColor: '#8b0000',
         pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#8b0000',
       }
     ]
   };
@@ -70,10 +64,9 @@ export class DashboardComponent implements OnInit {
     }
   };
 
-  // --- BAR CHART CONFIGURATION (Updated for Dates & Buildings) ---
   public barChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
-    datasets: [] // Dynamic datasets built in updateCharts()
+    datasets: [] 
   };
 
   public barChartOptions: ChartOptions<'bar'> = {
@@ -81,19 +74,10 @@ export class DashboardComponent implements OnInit {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: true, position: 'top' },
-      tooltip: { mode: 'index', intersect: false }
     },
     scales: {
-      x: { 
-        stacked: true, // Stacked for cleaner look on small scroll widths
-        grid: { display: false } 
-      },
-      y: { 
-        stacked: true,
-        beginAtZero: true, 
-        type: 'linear', 
-        ticks: { stepSize: 1 } 
-      }
+      x: { stacked: true, grid: { display: false } },
+      y: { stacked: true, beginAtZero: true, type: 'linear', ticks: { stepSize: 1 } }
     }
   };
 
@@ -124,23 +108,16 @@ export class DashboardComponent implements OnInit {
 
   processDataByRange(allBookings: any[]): void {
     let filteredBookings = [...allBookings];
-
     if (this.currentDateRange > 0) {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - this.currentDateRange);
       cutoffDate.setHours(0, 0, 0, 0);
-
-      filteredBookings = allBookings.filter(b => {
-        const bookingDate = new Date(b.dateKey);
-        return bookingDate >= cutoffDate;
-      });
+      filteredBookings = allBookings.filter(b => new Date(b.dateKey) >= cutoffDate);
     }
-
     this.updateCharts(filteredBookings);
   }
 
   updateCharts(bookingsToUse: any[]): void {
-    // 1. Unified Date Map (Same for both charts)
     const dateMap: { [key: string]: number } = {};
     bookingsToUse.forEach(b => {
       dateMap[b.dateKey] = (dateMap[b.dateKey] || 0) + 1;
@@ -152,18 +129,13 @@ export class DashboardComponent implements OnInit {
       return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     });
 
-    // --- Line Chart Data ---
     this.lineChartData.labels = displayLabels;
     this.lineChartData.datasets[0].data = sortedDates.map(d => dateMap[d]);
 
-    // --- Bar Chart Data (Grouped by Building per Date) ---
     this.barChartData.labels = displayLabels;
     
     const buildingColors: any = {
-      'SAC': '#f5a81c', // Gold
-      'NAC': '#4a0000', // Maroon
-      'WAC': '#326284', // Blue
-      'EAC': '#E68D76'  // Salmon
+      'SAC': '#f5a81c', 'NAC': '#4a0000', 'WAC': '#326284', 'EAC': '#E68D76'
     };
 
     this.barChartData.datasets = this.buildings.map(bName => ({
@@ -177,8 +149,9 @@ export class DashboardComponent implements OnInit {
       stack: 'buildingStack'
     }));
 
-    // Manual update for redraw
-    this.chart?.update();
+    if (this.chart) {
+       this.chart.update();
+    }
   }
 
   toggleBookingList(): void {

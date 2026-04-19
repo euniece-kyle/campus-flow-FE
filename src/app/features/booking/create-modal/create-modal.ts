@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { BookingService } from '../.././services/booking.service';
+import { BookingService } from '../../services/booking.service';
 
 interface Period {
   label: string;
@@ -26,7 +26,6 @@ export class CreateModal implements OnInit {
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
   subjects: string[] = [];
   
-  // ONE declaration for staff and selectedStaff
   staff: any[] = []; 
   selectedStaff: string = ''; 
 
@@ -51,32 +50,27 @@ export class CreateModal implements OnInit {
   constructor(private bookingService: BookingService, private http: HttpClient) {}
 
   ngOnInit() {
-    // 1. Fetch staff from the API
+    // Correct URL for your backend routing
     this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
       next: (data) => {
         this.staff = data;
-        console.log('Names loaded from DB:', this.staff);
       },
       error: (err) => console.error('Connection failed:', err)
     });
 
-    // 2. Set the default logged-in user
     const activeProfile = localStorage.getItem('user_profile');
     if (activeProfile) {
       const user = JSON.parse(activeProfile);
-      // This sets the initial dropdown value
       this.selectedStaff = user.username || `${user.firstName} ${user.lastName}`;
     } else {
       this.selectedStaff = this.bookedBy || "Guest"; 
     }
 
-    // 3. Set Date defaults
     const d = new Date(this.selectedDate);
     const finalDate = isNaN(d.getTime()) ? new Date() : d;
     this.data.startDate = this.toISODate(finalDate);
     this.data.customUntilDate = this.data.startDate;
 
-    // 4. Load Subjects/Departments
     const savedSubjects = localStorage.getItem('campus_departments');
     this.subjects = savedSubjects ? JSON.parse(savedSubjects) : ['Art', 'Math', 'Science'];
   }
@@ -93,7 +87,6 @@ export class CreateModal implements OnInit {
     this.http.post('http://localhost:3000/api/flow/create', bookingPayload)
       .subscribe({
         next: (response: any) => {
-          console.log('Successfully saved to MySQL!', response);
           this.create.emit(bookingPayload);
           this.close.emit();
         },

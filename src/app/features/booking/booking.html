@@ -1,4 +1,4 @@
-<div class="layout">  //UPDATE DASHBOARD
+<div class="layout">
   <aside class="sidebar">
     <div class="brand">
       <div class="logo-container">
@@ -8,7 +8,10 @@
     </div>
 
     <nav class="nav">
-      <div class="nav-item" routerLink="/booking" routerLinkActive="active">
+      <div class="nav-item" 
+           routerLink="/booking" 
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact: true}">
         Booking
         <span class="arrow" *ngIf="router.url === '/booking'">></span>
       </div>
@@ -38,144 +41,124 @@
   </aside>
 
   <main class="main">
-    <header class="dashboard-header">
-      <h1 class="dashboard-title">Dashboard</h1>
-      <p class="welcome-msg">
-        Welcome to <span class="brand-highlight">CampusFlow</span>. Here is today's overview.
-      </p>
-    </header>
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="icon-circle red-light-bg">🏫</div>
-        <div class="stat-info">
-          <h3>{{ totalRooms }}</h3>
-          <p>Total Rooms</p>
-        </div>
-      </div>
-
-      <div class="stat-card clickable" (click)="toggleBookingList()" style="cursor: pointer; transition: transform 0.2s;">
-        <div class="icon-circle gold-light-bg">📍</div>
-        <div class="stat-info">
-          <h3>{{ activeBookings }}</h3>
-          <p>Active Bookings</p>
-          <small *ngIf="!isListVisible" style="color: #999;">Click to view ↓</small>
-          <small *ngIf="isListVisible" style="color: #d4af37;">Click to hide ↑</small>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="icon-circle green-light-bg">🔓</div>
-        <div class="stat-info">
-          <h3>{{ availableNow }}</h3>
-          <p>Available Now</p>
-        </div>
+    <div class="calendar-container">
+      <div class="calendar-box">
+        <span class="date-text">{{ selectedDate | date:'MMMM d, yyyy' }}</span>
+        <span class="calendar-icon">📅</span>
+        <input type="date" [value]="dateForInput" (input)="onDateChange($event)">
       </div>
     </div>
 
-    <div class="charts-section" style="margin-top: 30px;">
-      <h2 style="font-size: 1.2rem; margin-bottom: 20px; color: #f5a81c; padding-left: 10px; border-left: 4px solid maroon;">Analytics Overview</h2>
-      
-      <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
+    <div class="red-header">
+      <button (click)="changeDate(-1)">Previous</button>
+      <span class="banner-date">{{ selectedDate | date:'EEEE, MMMM d, yyyy' }}</span>
+      <button (click)="changeDate(1)">Next</button>
+    </div>
+
+    <div class="tabs">
+      <button *ngFor="let b of buildings" 
+              (click)="selectBuilding(b)"
+              [class.active-blue]="selectedBuilding === b"
+              [class.inactive-yellow]="selectedBuilding !== b">
+        {{ b }}
+      </button>
+    </div>
+
+    <table class="booking-grid">
+      <thead>
+        <tr>
+          <th></th> 
+          <th *ngFor="let p of periods">
+            {{ p.label }}<br><small>({{ p.time }})</small>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let room of rooms">
+          <td class="room-label">{{ room }}</td>
+          <td *ngFor="let p of periods">
+            <div class="white-box" 
+                 (click)="openBookingModal(room, p.label)"
+                 [ngClass]="{
+                   'booked-one-time': getBooking(room, p.label)?.type === 'One-Time',
+                   'booked-recurring': getBooking(room, p.label)?.type === 'Recurring'
+                 }">
+              <div class="booking-inner-content" *ngIf="getBooking(room, p.label) as booking">
+                <div class="teacher-name">{{ booking.bookedBy }}</div>
+                <div class="subject-tag">{{ booking.subject }}</div>
+              </div>
+              </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </main>
+
+  <div class="drawer-overlay" *ngIf="isViewOpen" (click)="closeView()">
+    <div class="drawer-content" (click)="$event.stopPropagation()">
+      <button class="close-x-btn" (click)="closeView()">✕</button>
+
+      <h2 class="drawer-title">Booking <span class="highlight">Information</span></h2>
+      <h3 class="room-header">{{ selectedBooking?.room }}</h3>
+
+      <div class="info-table">
+        <div class="info-row gray-bg">
+          <span class="label">Date:</span>
+          <span class="value">{{ selectedDate | date:'EEEE, MMMM d, yyyy' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Occurs:</span>
+          <span class="value">{{ selectedBooking?.type }}</span>
+        </div>
+        <div class="info-row gray-bg">
+          <span class="label">Period:</span>
+          <span class="value">{{ selectedBooking?.period }} ({{ getPeriodTime(selectedBooking?.period) }})</span>
+        </div>
         
-        <div class="chart-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-          <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h4 style="margin: 0; color: #700000; font-size: 0.9rem; text-transform: uppercase;">Booking Trends</h4>
-            
-            <div class="range-controls" style="display: flex; gap: 5px; background: #f5f5f5; padding: 2px; border-radius: 6px;">
-              <button (click)="changeDateRange(7)" 
-                [style.background]="currentDateRange === 7 ? 'white' : 'transparent'"
-                [style.box-shadow]="currentDateRange === 7 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
-                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">7D</button>
-              <button (click)="changeDateRange(30)" 
-                [style.background]="currentDateRange === 30 ? 'white' : 'transparent'"
-                [style.box-shadow]="currentDateRange === 30 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
-                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">30D</button>
-              <button (click)="changeDateRange(0)" 
-                [style.background]="currentDateRange === 0 ? 'white' : 'transparent'"
-                [style.box-shadow]="currentDateRange === 0 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
-                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">ALL</button>
-            </div>
-          </div>
-
-          <div class="chart-scroll-container" style="width: 100%; overflow-x: auto; overflow-y: hidden;">
-            <div class="chart-canvas-wrapper" [style.width.%]="currentDateRange === 0 ? 200 : 100" style="height: 250px; min-width: 100%;">
-              <canvas baseChart
-                [data]="lineChartData"
-                [options]="lineChartOptions"
-                [type]="'line'">
-              </canvas>
-            </div>
-          </div>
+        <div class="info-row">
+          <span class="label">Subject:</span>
+          <span class="value">{{ selectedBooking?.subject }}</span>
         </div>
 
-        <div class="chart-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-          <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h4 style="margin: 0; color: #700000; font-size: 0.9rem; text-transform: uppercase;">Building Utilization</h4>
-            
-            <div class="range-controls" style="display: flex; gap: 5px; background: #f5f5f5; padding: 2px; border-radius: 6px;">
-              <button (click)="changeDateRange(7)" 
-                [style.background]="currentDateRange === 7 ? 'white' : 'transparent'"
-                [style.box-shadow]="currentDateRange === 7 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
-                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">7D</button>
-              <button (click)="changeDateRange(30)" 
-                [style.background]="currentDateRange === 30 ? 'white' : 'transparent'"
-                [style.box-shadow]="currentDateRange === 30 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
-                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">30D</button>
-              <button (click)="changeDateRange(0)" 
-                [style.background]="currentDateRange === 0 ? 'white' : 'transparent'"
-                [style.box-shadow]="currentDateRange === 0 ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'"
-                style="border: none; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; color: #444;">ALL</button>
-            </div>
-          </div>
-
-          <div class="chart-scroll-container" style="width: 100%; overflow-x: auto; overflow-y: hidden;">
-            <div class="chart-canvas-wrapper" [style.width.%]="currentDateRange === 0 ? 200 : 100" style="height: 250px; min-width: 100%;">
-              <canvas baseChart
-                [data]="barChartData"
-                [options]="barChartOptions"
-                [type]="'bar'">
-              </canvas>
-            </div>
-          </div>
+        <div class="info-row gray-bg">
+          <span class="label">Booked by:</span>
+          <span class="value">{{ selectedBooking?.bookedBy }}</span>
         </div>
 
-      </div>
-    </div>
-
-    <div class="details-panel" *ngIf="isListVisible" style="margin-top: 30px; animation: fadeIn 0.3s ease;">
-      <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h2 style="font-size: 1.2rem; color: maroon;">Live Booking Details</h2>
-        <button (click)="clearAllBookings()" style="background: #fff0f0; color: #ff4d4d; border: 1px solid #ffcccc; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Clear All Data</button>
+        <ng-container *ngIf="selectedBooking?.type === 'Recurring'">
+          <div class="info-row">
+            <span class="label">Starting from:</span>
+            <span class="value">{{ selectedBooking?.startingFrom }}</span>
+          </div>
+          <div class="info-row gray-bg">
+            <span class="label">Until:</span>
+            <span class="value">{{ selectedBooking?.until }}</span>
+          </div>
+        </ng-container>
       </div>
 
-      <div class="booking-list" style="display: grid; gap: 10px;">
-        <div *ngIf="todaysBookings.length === 0" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 8px; color: #666;">
-          No bookings found for today.
-        </div>
+      <div class="cancel-action-container">
+        <button class="btn-cancel-action" (click)="showCancelConfirm = true">
+          Cancel Booking
+        </button>
 
-        <div *ngFor="let b of todaysBookings" class="detail-item" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #d4af37;">
-          <div>
-            <span style="font-weight: bold; color: #333; display: block;">{{ b.room }}</span>
-            <span style="font-size: 0.85rem; color: #666;">{{ b.period }}</span>
-          </div>
-          <div style="text-align: right;">
-            <span style="font-size: 0.9rem; color: #444; display: block;">{{ b.bookedBy || 'Faculty User' }}</span>
-            <span style="font-size: 0.75rem; background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 10px;">Confirmed</span>
+        <div class="confirm-popup-card" *ngIf="showCancelConfirm">
+          <p class="confirm-msg">Cancel {{ selectedBooking?.type | lowercase }} booking?</p>
+          <button class="btn-confirm-yes" (click)="confirmCancel()">Yes, cancel booking</button>
+          <div class="no-keep-link">
+              <span (click)="showCancelConfirm = false">No, keep it</span>
           </div>
         </div>
       </div>
     </div>
-    
-    <div class="hero-section" style="margin-top: 30px;" *ngIf="!isListVisible">
-        <div class="hero-content">
-            <h2>Streamlining Campus Space</h2>
-            <p>
-              Effortlessly manage <strong>{{ totalRooms }} rooms</strong> 
-              across <strong>{{ buildings.length }} buildings</strong> 
-              and <strong>{{ periodsPerDay }} daily periods</strong>.
-            </p>
-        </div>
-    </div>
-  </main>
+  </div>
 </div>
+
+<app-create-modal 
+  *ngIf="isModalOpen" 
+  [roomName]="targetRoom"
+  [selectedDate]="(selectedDate | date:'EEEE, MMMM d, yyyy') ?? ''"
+  [bookedBy]="currentUserDisplayName" 
+  (close)="closeModal()"
+  (create)="handleNewBooking($event)">
+</app-create-modal>
