@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { RoomService } from '../../services/room.service'; // Path adjusted for folder depth
+import { RoomService } from '../../services/room.service'; 
 
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables, ChartConfiguration, ChartOptions } from 'chart.js';
@@ -18,21 +18,18 @@ Chart.register(...registerables);
 export class DashboardComponent implements OnInit {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
 
+  isListVisible: boolean = false;
+  currentDateRange: number = 7;
+  todaysBookings: any[] = [];
+  dailyTotal: number = 0;
+  periodsPerDay: number = 6;
+  // Stats Logic
   buildings: string[] = ['SAC', 'NAC', 'WAC', 'EAC'];
-  roomsPerBuilding: number = 5;
-  periodsPerDay: number = 6; 
-
   totalRooms: number = 20; 
   activeBookings: number = 0; 
   availableNow: number = 20; 
-  dailyTotal: number = 0;     
-
-  todaysBookings: any[] = [];     
-  isListVisible: boolean = false; 
-
-  currentDateRange: number = 7; 
+  
   private allSystemBookings: any[] = []; 
-
   private roomService = inject(RoomService);
 
   public lineChartData: ChartConfiguration<'line'>['data'] = {
@@ -83,23 +80,33 @@ export class DashboardComponent implements OnInit {
 
   constructor(public router: Router) {}
 
-  ngOnInit(): void {
-    this.totalRooms = this.buildings.length * this.roomsPerBuilding;
-    
+ngOnInit(): void {
+    // Listen to the room service for any changes in bookings
     this.roomService.bookings$.subscribe((allBookings: any[]) => {
-      this.allSystemBookings = allBookings;
-      this.calculateLiveStats(allBookings);
-      this.processDataByRange(allBookings); 
+      if (allBookings && allBookings.length > 0) {
+        this.allSystemBookings = allBookings;
+        this.updateDashboardStats(allBookings);
+        this.processDataByRange(7); // Default to 7 days
+      }
     });
   }
 
-  calculateLiveStats(allBookings: any[]): void {
-    const todayStr = new Date().toDateString();
-    this.dailyTotal = allBookings.length;
-    this.todaysBookings = allBookings.filter(b => b.dateKey === todayStr);
-    this.activeBookings = this.todaysBookings.length;
+  updateDashboardStats(bookings: any[]): void {
+    const today = new Date().toDateString();
+    // Filter bookings that match today's date
+    const todaysBookings = bookings.filter(b => b.dateKey === today);
+    
+    this.activeBookings = todaysBookings.length;
     this.availableNow = this.totalRooms - this.activeBookings;
   }
+
+calculateLiveStats(allBookings: any[]): void {
+  const todayStr = new Date().toDateString();
+  this.dailyTotal = allBookings.length; // Now this will work!
+  this.todaysBookings = allBookings.filter(b => b.dateKey === todayStr);
+  this.activeBookings = this.todaysBookings.length;
+  this.availableNow = this.totalRooms - this.activeBookings;
+}
 
   changeDateRange(days: number): void {
     this.currentDateRange = days;
@@ -152,6 +159,11 @@ export class DashboardComponent implements OnInit {
     if (this.chart) {
        this.chart.update();
     }
+    setTimeout(() => {
+  if (this.chart && this.chart.chart) {
+    this.chart.chart.update();
+  }
+}, 100);
   }
 
   toggleBookingList(): void {
