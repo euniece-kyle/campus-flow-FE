@@ -40,7 +40,7 @@ export class DashboardComponent implements OnInit {
     'SAC': '#f5a81c', 'NAC': '#4a0000', 'WAC': '#326284', 'EAC': '#E68D76'
   };
 
-  // --- Chart Configurations (Unchanged) ---
+  // --- Chart Configurations ---
   public lineChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
     datasets: [
@@ -111,9 +111,12 @@ export class DashboardComponent implements OnInit {
   }
 
   updateDashboardStats(allBookings: any[]): void {
-    const today = new Date().toDateString();
+    // Matches MySQL 'DATE' format: 2026-04-19
+    const today = new Date().toISOString().split('T')[0];
     this.dailyTotal = allBookings.length;
-    this.todaysBookings = allBookings.filter(b => b.dateKey === today);
+    
+    // Use booking_date to match your DB column
+    this.todaysBookings = allBookings.filter(b => b.booking_date === today);
     this.activeBookings = this.todaysBookings.length;
     this.availableNow = this.totalRooms - this.activeBookings;
   }
@@ -133,7 +136,7 @@ export class DashboardComponent implements OnInit {
       cutoffDate.setHours(0, 0, 0, 0);
       
       filteredBookings = this.allSystemBookings.filter(b => {
-        const bookingDate = new Date(b.dateKey);
+        const bookingDate = new Date(b.booking_date);
         return bookingDate >= cutoffDate;
       });
     }
@@ -144,7 +147,7 @@ export class DashboardComponent implements OnInit {
   updateCharts(bookingsToUse: any[]): void {
     const dateMap: { [key: string]: number } = {};
     bookingsToUse.forEach(b => {
-      dateMap[b.dateKey] = (dateMap[b.dateKey] || 0) + 1;
+      dateMap[b.booking_date] = (dateMap[b.booking_date] || 0) + 1;
     });
 
     const sortedDates = Object.keys(dateMap).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
@@ -162,7 +165,8 @@ export class DashboardComponent implements OnInit {
     this.barChartData.datasets = this.buildings.map(bName => ({
       label: bName,
       data: sortedDates.map(date => 
-        bookingsToUse.filter(b => b.dateKey === date && b.room.startsWith(bName)).length
+        // Use room_name to match your DB column
+        bookingsToUse.filter(b => b.booking_date === date && b.room_name.startsWith(bName)).length
       ),
       backgroundColor: this.buildingColorMap[bName] || '#ccc',
       borderColor: '#fff',

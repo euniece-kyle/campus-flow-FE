@@ -17,12 +17,8 @@ export class CreateModal implements OnInit {
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
   
-  // RESTORED: This fixes the UI buttons for 'One-Time' vs 'Recurring'
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
-  
-  // FIX: This solves the TS2339 'subjects' error in your terminal
   subjects: string[] = ['Art', 'Math', 'Science', 'Drama', 'Languages'];
-
   staff: any[] = []; 
   selectedStaff: string = ''; 
 
@@ -45,7 +41,6 @@ export class CreateModal implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    // Fetch user list for the 'Booked By' dropdown
     this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
       next: (data) => { this.staff = data; },
       error: (err) => console.error('Connection failed:', err)
@@ -60,7 +55,6 @@ export class CreateModal implements OnInit {
     }
   }
 
-  // RESTORED: Needed for the 'Recurring' date picker logic
   onUntilChange() {
     this.data.showDatePicker = (this.data.untilDate === 'Pick Date');
   }
@@ -70,7 +64,7 @@ export class CreateModal implements OnInit {
       room: this.roomName,
       date: this.selectedDate,
       period: this.data.period,
-      subject: this.data.department, // Maps to 'department_id' if needed later
+      subject: this.data.department, // Fixed mapping to 'subject'
       bookedBy: this.selectedStaff,
       bookingType: this.selectedType,
       untilDate: this.data.untilDate === 'Ending of session' ? null : this.data.untilDate
@@ -84,7 +78,7 @@ export class CreateModal implements OnInit {
         },
         error: (err) => {
           console.error('Frontend Error:', err);
-          alert('Check backend terminal for red text!');
+          alert('Submission failed. Check backend terminal!');
         }
       });
   }
