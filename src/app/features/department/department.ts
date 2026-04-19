@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-department',
@@ -11,30 +12,76 @@ import { Router, RouterModule } from '@angular/router';
   styleUrls: ['./department.scss']
 })
 export class DepartmentComponent implements OnInit {
-  // Use 'Subject' terminology for clarity
   newSubjectName: string = '';
-  subjects: string[] = [
-    'Art', 'Business Studies', 'Computing', 'Drama', 'English',
-    'Geography', 'History', 'Languages', 'Math', 'Music', 'Science', 'Technology'
-  ];
-
+  subjects: any[] = [];
   isAdding: boolean = false;
+  
+  // Update this URL to match your Hono backend port
+  private apiUrl = 'http://localhost:3000/api/subjects';
 
-  constructor(public router: Router) {}
+  constructor(public router: Router, private http: HttpClient) {}
 
   ngOnInit() {
-    const saved = localStorage.getItem('campus_departments');
-    if (saved) {
-      this.subjects = JSON.parse(saved);
+    this.fetchSubjects();
+  }
+
+  fetchSubjects() {
+    this.http.get<any[]>(this.apiUrl).subscribe({
+      next: (data) => {
+        // Sort subjects alphabetically by name
+        this.subjects = data.sort((a, b) => a.name.localeCompare(b.name));
+      },
+      error: (err) => {
+        console.error('Error fetching subjects:', err);
+      }
+    });
+  }
+
+  addSubject() {
+    if (this.newSubjectName.trim()) {
+      const payload = { name: this.newSubjectName.trim() };
+      this.http.post(this.apiUrl, payload).subscribe({
+        next: () => {
+          this.fetchSubjects();
+          this.newSubjectName = '';
+          this.isAdding = false;
+        },
+        error: (err) => {
+          console.error('Add failed:', err);
+          alert('Failed to add subject. Is the backend running?');
+        }
+      });
     }
   }
 
-  private saveToStorage() {
-    localStorage.setItem('campus_departments', JSON.stringify(this.subjects));
+  deleteSubject(id: number) {
+    if (confirm('Are you sure you want to delete this subject?')) {
+      this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+        next: () => {
+          this.fetchSubjects();
+        },
+        error: (err) => {
+          console.error('Delete failed:', err);
+          alert('Could not delete subject.');
+        }
+      });
+    }
   }
 
-  onSignOut() {
-    this.router.navigate(['/login']);
+  editSubject(subject: any) {
+    const updatedName = prompt('Edit Subject Name:', subject.name);
+    if (updatedName && updatedName.trim() && updatedName !== subject.name) {
+      const payload = { name: updatedName.trim() };
+      this.http.patch(`${this.apiUrl}/${subject.id}`, payload).subscribe({
+        next: () => {
+          this.fetchSubjects();
+        },
+        error: (err) => {
+          console.error('Update failed:', err);
+          alert('Failed to update subject.');
+        }
+      });
+    }
   }
 
   toggleAddBox() {
@@ -44,30 +91,7 @@ export class DepartmentComponent implements OnInit {
     }
   }
 
-  addSubject() {
-    if (this.newSubjectName.trim()) {
-      this.subjects.push(this.newSubjectName.trim());
-      this.subjects.sort();
-      this.saveToStorage();
-
-      this.newSubjectName = '';
-      this.isAdding = false;
-    }
-  }
-
-  deleteSubject(index: number) {
-    if (confirm('Are you sure you want to delete this subject?')) {
-      this.subjects.splice(index, 1);
-      this.saveToStorage();
-    }
-  }
-
-  editSubject(index: number) {
-    const updatedName = prompt('Edit Subject Name:', this.subjects[index]);
-    if (updatedName && updatedName.trim()) {
-      this.subjects[index] = updatedName.trim();
-      this.subjects.sort();
-      this.saveToStorage();
-    }
+  onSignOut() {
+    this.router.navigate(['/login']);
   }
 }

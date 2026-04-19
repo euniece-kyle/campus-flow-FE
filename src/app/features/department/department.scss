@@ -1,14 +1,11 @@
-// 1. Modern Sass Modules
 @use "sass:color";
 
-// --- VARIABLES ---
 $maroon: #4a0000;
 $yellow-tab: #f5a81c;
 $bg-color: #fffcf8;
 
 .layout { display: flex; height: 100vh; font-family: sans-serif; background: $bg-color; }
 
-// --- SIDEBAR ---
 .sidebar {
   width: 240px; 
   background: $maroon !important;
@@ -41,7 +38,6 @@ $bg-color: #fffcf8;
       align-items: center;
       cursor: pointer;
       transition: all 0.2s ease;
-
       background-color: $maroon !important; 
       color: rgba(255, 255, 255, 0.8) !important;
       
@@ -73,7 +69,6 @@ $bg-color: #fffcf8;
   }
 }
 
-// --- MAIN CONTENT ---
 .main { flex: 1; padding: 40px; overflow-y: auto; }
 
 .dept-title {
@@ -83,7 +78,6 @@ $bg-color: #fffcf8;
   margin-bottom: 25px;
 }
 
-// --- CREATE BAR ---
 .create-dept-container {
   margin-bottom: 30px;
   
@@ -132,10 +126,21 @@ $bg-color: #fffcf8;
       font-size: 0.9rem;
       &:focus { outline: none; border-color: $yellow-tab; }
     }
+
+    .save-inline-btn {
+      background: $maroon;
+      color: white;
+      border: none;
+      padding: 6px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-left: 10px;
+      &:hover { opacity: 0.9; }
+    }
   }
 }
 
-// --- TABLE ---
 .dept-table-wrapper {
   border: 1px solid #000;
   border-radius: 4px;

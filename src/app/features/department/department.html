@@ -52,9 +52,9 @@
     <div class="create-dept-container">
       <div class="create-dept-card">
         <button class="add-btn" (click)="toggleAddBox()">
-          <span class="plus">+</span>
+          <span class="plus">{{ isAdding ? '−' : '+' }}</span>
         </button>
-        <span class="create-label">Create Subject</span>
+        <span class="create-label">{{ isAdding ? 'Close Input' : 'Create Subject' }}</span>
         
         <input 
           *ngIf="isAdding"
@@ -65,6 +65,7 @@
           (keyup.enter)="addSubject()"
           autofocus
         >
+        <button *ngIf="isAdding" class="save-inline-btn" (click)="addSubject()">Save</button>
       </div>
     </div>
 
@@ -77,15 +78,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let subject of subjects; let i = index">
-            <td class="dept-name-cell">{{ subject }}</td>
+          <tr *ngFor="let subject of subjects">
+            <td class="dept-name-cell">{{ subject.name }}</td>
             <td class="dept-actions-cell">
-              <button class="action-btn edit" (click)="editSubject(i)">
+              <button class="action-btn edit" (click)="editSubject(subject)">
                 <span class="icon">✏️</span>
               </button>
-              <button class="action-btn delete" (click)="deleteSubject(i)">
+              <button class="action-btn delete" (click)="deleteSubject(subject.id)">
                 <span class="icon">❌</span>
               </button>
+            </td>
+          </tr>
+          <tr *ngIf="subjects.length === 0">
+            <td colspan="2" style="text-align: center; padding: 20px; color: #888;">
+              No subjects found. Add your first subject above!
             </td>
           </tr>
         </tbody>
