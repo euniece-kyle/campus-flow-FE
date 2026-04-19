@@ -50,7 +50,7 @@ export class CreateModal implements OnInit {
   constructor(private bookingService: BookingService, private http: HttpClient) {}
 
   ngOnInit() {
-    // Correct URL for your backend routing
+    // This matches your flowRouter.get('/users') route
     this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
       next: (data) => {
         this.staff = data;
@@ -76,6 +76,8 @@ export class CreateModal implements OnInit {
   }
 
   onSubmit() {
+    // These keys (room, date, period, etc.) MUST match the names 
+    // you used in flow.route.ts
     const bookingPayload = {
       room: this.roomName,
       date: this.selectedDate,
@@ -84,15 +86,20 @@ export class CreateModal implements OnInit {
       bookedBy: this.selectedStaff 
     };
 
-    this.http.post('http://localhost:3000/api/flow/create', bookingPayload)
+    console.log('Attempting save to backend:', bookingPayload);
+
+    // FIXED URL: index.ts (/api) + flow.route.ts (/create)
+    this.http.post('http://localhost:3000/api/create', bookingPayload)
       .subscribe({
         next: (response: any) => {
+          console.log('Success!', response);
+          alert('Booking saved to MySQL!');
           this.create.emit(bookingPayload);
           this.close.emit();
         },
         error: (err) => {
           console.error('MySQL Insert Failed:', err);
-          alert('Error saving to database!');
+          alert('Error saving to database! Check the backend terminal for red text.');
         }
       });
   }
