@@ -45,9 +45,12 @@ export class BookingComponent implements OnInit {
     private http: HttpClient
   ) {}
 
-  ngOnInit() {
+ngOnInit() {
     this.selectedDate.setHours(0,0,0,0);
-    this.loadBookings();
+    // Subscribe to service so UI updates when DB data arrives
+    this.roomService.bookings$.subscribe(data => {
+      this.savedBookings = data;
+    });
   }
 
   getPeriodTime(periodLabel: string): string {
@@ -55,14 +58,9 @@ export class BookingComponent implements OnInit {
     return period ? period.time : '';
   }
 
-  loadBookings() {
-    this.http.get<any[]>('http://localhost:3000/api/bookings').subscribe({
-      next: (data) => {
-        this.savedBookings = data;
-        this.roomService.updateBookings(data);
-      },
-      error: (err) => console.error('Failed to load bookings from API', err)
-    });
+loadBookings() {
+    // Tell the service to fetch fresh data from the API
+    this.roomService.loadAllBookings();
   }
 
   handleNewBooking(bookingData: any) {
@@ -94,7 +92,7 @@ export class BookingComponent implements OnInit {
     return this.savedBookings.find(b =>
       b.room_name === room &&
       b.period === periodLabel &&
-      b.booking_date.startsWith(formattedDate)
+      b.booking_date.includes(formattedDate)
     );
   }
 

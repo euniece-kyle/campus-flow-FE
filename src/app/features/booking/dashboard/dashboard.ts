@@ -93,7 +93,7 @@ export class DashboardComponent implements OnInit {
       if (allBookings) {
         this.allSystemBookings = allBookings;
         this.updateDashboardStats(allBookings);
-        this.processDataByRange(7);
+        this.processDataByRange(this.currentDateRange);
       }
     });
   }
@@ -109,12 +109,14 @@ export class DashboardComponent implements OnInit {
   }
 
   updateDashboardStats(allBookings: any[]): void {
-    // Matches MySQL 'DATE' format: 2026-04-19
-    const today = new Date().toISOString().split('T')[0];
+    // Generate today's date in YYYY-MM-DD format
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
     this.dailyTotal = allBookings.length;
     
-    // Use booking_date to match your DB column
-    this.todaysBookings = allBookings.filter(b => b.booking_date === today);
+    // FIXED: Use .includes(today) to match the DB format correctly
+    this.todaysBookings = allBookings.filter(b => b.booking_date.includes(today));
     this.activeBookings = this.todaysBookings.length;
     this.availableNow = this.totalRooms - this.activeBookings;
   }
@@ -145,7 +147,9 @@ export class DashboardComponent implements OnInit {
   updateCharts(bookingsToUse: any[]): void {
     const dateMap: { [key: string]: number } = {};
     bookingsToUse.forEach(b => {
-      dateMap[b.booking_date] = (dateMap[b.booking_date] || 0) + 1;
+      // Clean the date string for chart labels
+      const d = b.booking_date.split('T')[0];
+      dateMap[d] = (dateMap[d] || 0) + 1;
     });
 
     const sortedDates = Object.keys(dateMap).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
@@ -163,8 +167,8 @@ export class DashboardComponent implements OnInit {
     this.barChartData.datasets = this.buildings.map(bName => ({
       label: bName,
       data: sortedDates.map(date => 
-        // Use room_name to match your DB column
-        bookingsToUse.filter(b => b.booking_date === date && b.room_name.startsWith(bName)).length
+        // FIXED: Match room name and date string
+        bookingsToUse.filter(b => b.booking_date.includes(date) && b.room_name.startsWith(bName)).length
       ),
       backgroundColor: this.buildingColorMap[bName] || '#ccc',
       borderColor: '#fff',
@@ -173,7 +177,7 @@ export class DashboardComponent implements OnInit {
     }));
 
     if (this.chart) {
-       this.chart.update();
+        this.chart.update();
     }
     
     setTimeout(() => {
