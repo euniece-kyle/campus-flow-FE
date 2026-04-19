@@ -35,7 +35,12 @@ export class DashboardComponent implements OnInit {
   private allSystemBookings: any[] = []; 
   private roomService = inject(RoomService);
 
-  // --- Chart Configurations ---
+  // Map for Dynamic UI Color-Coding
+  private buildingColorMap: { [key: string]: string } = {
+    'SAC': '#f5a81c', 'NAC': '#4a0000', 'WAC': '#326284', 'EAC': '#E68D76'
+  };
+
+  // --- Chart Configurations (Unchanged) ---
   public lineChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
     datasets: [
@@ -86,14 +91,23 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.totalRooms = this.buildings.length * this.roomsPerBuilding;
-    // Listen to the room service for any changes in bookings
     this.roomService.bookings$.subscribe((allBookings: any[]) => {
       if (allBookings) {
         this.allSystemBookings = allBookings;
         this.updateDashboardStats(allBookings);
-        this.processDataByRange(7); // Initialize with 7 days
+        this.processDataByRange(7);
       }
     });
+  }
+
+  // Helper for dynamic coloring in the Template
+  getBookingStyle(roomName: string) {
+    const prefix = roomName?.split(' ')[0]; 
+    const bgColor = this.buildingColorMap[prefix] || '#e9e9e9';
+    return {
+      'border-left': `8px solid ${bgColor}`,
+      'background-color': '#ffffff'
+    };
   }
 
   updateDashboardStats(allBookings: any[]): void {
@@ -145,22 +159,17 @@ export class DashboardComponent implements OnInit {
 
     this.barChartData.labels = displayLabels;
     
-    const buildingColors: any = {
-      'SAC': '#f5a81c', 'NAC': '#4a0000', 'WAC': '#326284', 'EAC': '#E68D76'
-    };
-
     this.barChartData.datasets = this.buildings.map(bName => ({
       label: bName,
       data: sortedDates.map(date => 
         bookingsToUse.filter(b => b.dateKey === date && b.room.startsWith(bName)).length
       ),
-      backgroundColor: buildingColors[bName] || '#ccc',
+      backgroundColor: this.buildingColorMap[bName] || '#ccc',
       borderColor: '#fff',
       borderWidth: 1,
       stack: 'buildingStack'
     }));
 
-    // Trigger chart update
     if (this.chart) {
        this.chart.update();
     }
