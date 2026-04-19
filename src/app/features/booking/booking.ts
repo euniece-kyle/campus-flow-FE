@@ -1,139 +1,199 @@
-import { Component, OnInit } from '@angular/core'; 
-import { CommonModule, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router'; 
-import { CreateModal } from './create-modal/create-modal';
-import { RoomService } from '../services/room.service';
+import { Component, OnInit, inject, ViewChild } from '@angular/core';   //UPDATE TS
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { RoomService } from '../../services/room.service'; 
+
+// --- 1. Import Chart.js core and Registerables ---
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, registerables, ChartConfiguration, ChartOptions } from 'chart.js';
+
+// --- 2. Manually Register scales and elements to fix "linear" error ---
+Chart.register(...registerables);
 
 @Component({
-  selector: 'app-booking',
+  selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, CreateModal, RouterModule],
-  templateUrl: './booking.html',
-  styleUrls: ['./booking.scss'],
-  providers: [DatePipe]
+  imports: [CommonModule, RouterLink, RouterLinkActive, BaseChartDirective],
+  templateUrl: './dashboard.html',
+  styleUrls: ['./dashboard.scss']
 })
-export class BookingComponent implements OnInit { 
-  selectedBuilding: string = 'SAC Building';
-  selectedDate: Date = new Date();
-currentUserDisplayName: string = 'Helen Grace Fillalan';
-  
-  isModalOpen: boolean = false;
-  targetRoom: string = '';
-  targetPeriod: string = '';
+export class DashboardComponent implements OnInit {
+  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
-  isViewOpen: boolean = false;
-  selectedBooking: any = null;
-  showCancelConfirm: boolean = false;
+  buildings: string[] = ['SAC', 'NAC', 'WAC', 'EAC'];
+  roomsPerBuilding: number = 5;
+  periodsPerDay: number = 6; 
 
-  savedBookings: any[] = [];
-  buildings: string[] = ['SAC Building', 'NAC Building', 'WAC Building', 'EAC Building'];
-  
-  periods = [
-    { label: 'Period 1', time: '9:00am - 10:30am' },
-    { label: 'Period 2', time: '10:30am - 12:00nn' },
-    { label: 'LUNCH',    time: '12:00nn - 1:00pm' },
-    { label: 'Period 4', time: '1:00pm - 2:00pm' },
-    { label: 'Period 5', time: '2:30pm - 3:30pm' },
-    { label: 'Period 6', time: '3:30pm - 5:00pm' }
-  ];
+  totalRooms: number = 20; 
+  activeBookings: number = 0; 
+  availableNow: number = 20; 
+  dailyTotal: number = 0;     
 
-  constructor(public router: Router, private roomService: RoomService) {}
+  todaysBookings: any[] = [];     
+  isListVisible: boolean = false; 
 
-  ngOnInit() {
-    this.selectedDate.setHours(0,0,0,0);
-    const saved = localStorage.getItem('campus_bookings');
-    if (saved) {
-      this.savedBookings = JSON.parse(saved);
+  // --- Chart Navigation State ---
+  currentDateRange: number = 7; 
+  private allSystemBookings: any[] = []; 
+
+  private roomService = inject(RoomService);
+
+  // --- LINE CHART CONFIGURATION ---
+  public lineChartData: ChartConfiguration<'line'>['data'] = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        label: 'Booking Volume',
+        fill: true,
+        tension: 0.4,
+        borderColor: '#8b0000',           // Maroon
+        backgroundColor: 'rgba(152, 8, 8, 0.15)', 
+        pointBackgroundColor: '#8b0000',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: '#8b0000',
+      }
+    ]
+  };
+
+  public lineChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false, 
+    plugins: {
+      legend: { display: true, position: 'top' },
+      tooltip: { mode: 'index', intersect: false }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { beginAtZero: true, type: 'linear', ticks: { stepSize: 1 } }
     }
-    this.syncService();
+  };
+
+  // --- BAR CHART CONFIGURATION (Updated for Dates & Buildings) ---
+  public barChartData: ChartConfiguration<'bar'>['data'] = {
+    labels: [],
+    datasets: [] // Dynamic datasets built in updateCharts()
+  };
+
+  public barChartOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: true, position: 'top' },
+      tooltip: { mode: 'index', intersect: false }
+    },
+    scales: {
+      x: { 
+        stacked: true, // Stacked for cleaner look on small scroll widths
+        grid: { display: false } 
+      },
+      y: { 
+        stacked: true,
+        beginAtZero: true, 
+        type: 'linear', 
+        ticks: { stepSize: 1 } 
+      }
+    }
+  };
+
+  constructor(public router: Router) {}
+
+  ngOnInit(): void {
+    this.totalRooms = this.buildings.length * this.roomsPerBuilding;
+    
+    this.roomService.bookings$.subscribe((allBookings: any[]) => {
+      this.allSystemBookings = allBookings;
+      this.calculateLiveStats(allBookings);
+      this.processDataByRange(allBookings); 
+    });
   }
 
-  getPeriodTime(label: string | undefined): string {
-    if (!label) return '';
-    const p = this.periods.find(period => period.label === label);
-    return p ? p.time : '';
+  calculateLiveStats(allBookings: any[]): void {
+    const todayStr = new Date().toDateString();
+    this.dailyTotal = allBookings.length;
+    this.todaysBookings = allBookings.filter(b => b.dateKey === todayStr);
+    this.activeBookings = this.todaysBookings.length;
+    this.availableNow = this.totalRooms - this.activeBookings;
   }
 
-  private saveToStorage() {
-    localStorage.setItem('campus_bookings', JSON.stringify(this.savedBookings));
-    this.syncService(); 
+  changeDateRange(days: number): void {
+    this.currentDateRange = days;
+    this.processDataByRange(this.allSystemBookings);
   }
 
-  private syncService() {
-    this.roomService.updateBookings(this.savedBookings);
+  processDataByRange(allBookings: any[]): void {
+    let filteredBookings = [...allBookings];
+
+    if (this.currentDateRange > 0) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - this.currentDateRange);
+      cutoffDate.setHours(0, 0, 0, 0);
+
+      filteredBookings = allBookings.filter(b => {
+        const bookingDate = new Date(b.dateKey);
+        return bookingDate >= cutoffDate;
+      });
+    }
+
+    this.updateCharts(filteredBookings);
   }
 
-  handleNewBooking(bookingData: any) {
-    const newBooking = {
-      ...bookingData,
-      room: this.targetRoom,     
-      period: this.targetPeriod, 
-      dateKey: this.selectedDate.toDateString(),
-      createdAt: new Date().toISOString()
+  updateCharts(bookingsToUse: any[]): void {
+    // 1. Unified Date Map (Same for both charts)
+    const dateMap: { [key: string]: number } = {};
+    bookingsToUse.forEach(b => {
+      dateMap[b.dateKey] = (dateMap[b.dateKey] || 0) + 1;
+    });
+    const sortedDates = Object.keys(dateMap).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    
+    const displayLabels = sortedDates.map(d => {
+      const dt = new Date(d);
+      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+
+    // --- Line Chart Data ---
+    this.lineChartData.labels = displayLabels;
+    this.lineChartData.datasets[0].data = sortedDates.map(d => dateMap[d]);
+
+    // --- Bar Chart Data (Grouped by Building per Date) ---
+    this.barChartData.labels = displayLabels;
+    
+    const buildingColors: any = {
+      'SAC': '#f5a81c', // Gold
+      'NAC': '#4a0000', // Maroon
+      'WAC': '#326284', // Blue
+      'EAC': '#E68D76'  // Salmon
     };
 
-    this.savedBookings.push(newBooking);
-    this.saveToStorage(); 
-    this.isModalOpen = false;
+    this.barChartData.datasets = this.buildings.map(bName => ({
+      label: bName,
+      data: sortedDates.map(date => 
+        bookingsToUse.filter(b => b.dateKey === date && b.room.startsWith(bName)).length
+      ),
+      backgroundColor: buildingColors[bName] || '#ccc',
+      borderColor: '#fff',
+      borderWidth: 1,
+      stack: 'buildingStack'
+    }));
+
+    // Manual update for redraw
+    this.chart?.update();
   }
 
-  confirmCancel() {
-    this.savedBookings = this.savedBookings.filter(b => b !== this.selectedBooking);
-    this.saveToStorage(); 
-    this.closeView();
+  toggleBookingList(): void {
+    this.isListVisible = !this.isListVisible;
   }
 
-  get rooms(): string[] {
-    const prefix = this.selectedBuilding.split(' ')[0];
-    return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
-  }
-
-  getBooking(room: string, periodLabel: string) {
-    return this.savedBookings.find(b =>
-      b.room === room &&
-      b.period === periodLabel &&
-      b.dateKey === this.selectedDate.toDateString()
-    );
-  }
-
-  openBookingModal(room: string, periodLabel: string) {
-    const existing = this.getBooking(room, periodLabel);
-    if (existing) {
-      this.selectedBooking = existing;
-      this.isViewOpen = true; 
-    } else {
-      this.targetRoom = room;
-      this.targetPeriod = periodLabel;
-      this.isModalOpen = true; 
+  clearAllBookings(): void {
+    if(confirm('Are you sure you want to clear all data?')) {
+      localStorage.removeItem('campus_bookings');
+      this.roomService.updateBookings([]);
+      this.isListVisible = false;
     }
   }
 
-  get dateForInput(): string {
-    const year = this.selectedDate.getFullYear();
-    const month = String(this.selectedDate.getMonth() + 1).padStart(2, '0');
-    const day = String(this.selectedDate.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  onSignOut(): void {
+    this.router.navigate(['/login']);
   }
-
-  onDateChange(event: any) {
-    const val = (event.target as HTMLInputElement).value;
-    if (val) {
-      const [year, month, day] = val.split('-').map(Number);
-      this.selectedDate = new Date(year, month - 1, day);
-      this.selectedDate.setHours(0,0,0,0);
-    }
-  }
-
-  changeDate(offset: number) {
-    const d = new Date(this.selectedDate);
-    d.setDate(d.getDate() + offset);
-    d.setHours(0,0,0,0);
-    this.selectedDate = d;
-  }
-
-  closeView() { this.isViewOpen = false; this.showCancelConfirm = false; this.selectedBooking = null; }
-  closeModal() { this.isModalOpen = false; }
-  selectBuilding(building: string) { this.selectedBuilding = building; }
-  onSignOut() { this.router.navigate(['/login']); }
 }
