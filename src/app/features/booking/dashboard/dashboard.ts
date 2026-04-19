@@ -18,13 +18,16 @@ Chart.register(...registerables);
 export class DashboardComponent implements OnInit {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
 
+  // --- Component State ---
   isListVisible: boolean = false;
   currentDateRange: number = 7;
   todaysBookings: any[] = [];
   dailyTotal: number = 0;
   periodsPerDay: number = 6;
-  // Stats Logic
+  
+  // --- Stats Logic ---
   buildings: string[] = ['SAC', 'NAC', 'WAC', 'EAC'];
+  roomsPerBuilding: number = 5;
   totalRooms: number = 20; 
   activeBookings: number = 0; 
   availableNow: number = 20; 
@@ -32,6 +35,7 @@ export class DashboardComponent implements OnInit {
   private allSystemBookings: any[] = []; 
   private roomService = inject(RoomService);
 
+  // --- Chart Configurations ---
   public lineChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
     datasets: [
@@ -80,47 +84,46 @@ export class DashboardComponent implements OnInit {
 
   constructor(public router: Router) {}
 
-ngOnInit(): void {
+  ngOnInit(): void {
+    this.totalRooms = this.buildings.length * this.roomsPerBuilding;
     // Listen to the room service for any changes in bookings
     this.roomService.bookings$.subscribe((allBookings: any[]) => {
-      if (allBookings && allBookings.length > 0) {
+      if (allBookings) {
         this.allSystemBookings = allBookings;
         this.updateDashboardStats(allBookings);
-        this.processDataByRange(7); // Default to 7 days
+        this.processDataByRange(7); // Initialize with 7 days
       }
     });
   }
 
-  updateDashboardStats(bookings: any[]): void {
+  updateDashboardStats(allBookings: any[]): void {
     const today = new Date().toDateString();
-    // Filter bookings that match today's date
-    const todaysBookings = bookings.filter(b => b.dateKey === today);
-    
-    this.activeBookings = todaysBookings.length;
+    this.dailyTotal = allBookings.length;
+    this.todaysBookings = allBookings.filter(b => b.dateKey === today);
+    this.activeBookings = this.todaysBookings.length;
     this.availableNow = this.totalRooms - this.activeBookings;
   }
 
-calculateLiveStats(allBookings: any[]): void {
-  const todayStr = new Date().toDateString();
-  this.dailyTotal = allBookings.length; // Now this will work!
-  this.todaysBookings = allBookings.filter(b => b.dateKey === todayStr);
-  this.activeBookings = this.todaysBookings.length;
-  this.availableNow = this.totalRooms - this.activeBookings;
-}
-
   changeDateRange(days: number): void {
     this.currentDateRange = days;
-    this.processDataByRange(this.allSystemBookings);
+    this.processDataByRange(days);
   }
 
-  processDataByRange(allBookings: any[]): void {
-    let filteredBookings = [...allBookings];
-    if (this.currentDateRange > 0) {
+  processDataByRange(days: number): void {
+    this.currentDateRange = days;
+    let filteredBookings = [...this.allSystemBookings];
+
+    if (days > 0) {
       const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - this.currentDateRange);
+      cutoffDate.setDate(cutoffDate.getDate() - days);
       cutoffDate.setHours(0, 0, 0, 0);
-      filteredBookings = allBookings.filter(b => new Date(b.dateKey) >= cutoffDate);
+      
+      filteredBookings = this.allSystemBookings.filter(b => {
+        const bookingDate = new Date(b.dateKey);
+        return bookingDate >= cutoffDate;
+      });
     }
+
     this.updateCharts(filteredBookings);
   }
 
@@ -129,6 +132,7 @@ calculateLiveStats(allBookings: any[]): void {
     bookingsToUse.forEach(b => {
       dateMap[b.dateKey] = (dateMap[b.dateKey] || 0) + 1;
     });
+
     const sortedDates = Object.keys(dateMap).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
     
     const displayLabels = sortedDates.map(d => {
@@ -156,14 +160,16 @@ calculateLiveStats(allBookings: any[]): void {
       stack: 'buildingStack'
     }));
 
+    // Trigger chart update
     if (this.chart) {
        this.chart.update();
     }
+    
     setTimeout(() => {
-  if (this.chart && this.chart.chart) {
-    this.chart.chart.update();
-  }
-}, 100);
+      if (this.chart && this.chart.chart) {
+        this.chart.chart.update();
+      }
+    }, 100);
   }
 
   toggleBookingList(): void {
