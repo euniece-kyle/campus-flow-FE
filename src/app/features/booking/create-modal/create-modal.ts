@@ -17,18 +17,17 @@ export class CreateModal implements OnInit {
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
   
-  // FIX: Restore 'selectedType' for the toggle buttons in your template
+  // RESTORED: Required for the UI toggle
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
   
   staff: any[] = []; 
   selectedStaff: string = ''; 
-  subjects: string[] = ['Art', 'Math', 'Science', 'Drama', 'Languages'];
 
   data: any = {
     period: '',
     department: '', 
-    untilDate: 'Ending of session', // Restored for [(ngModel)]
-    showDatePicker: false          // Restored for *ngIf
+    untilDate: 'Ending of session',
+    showDatePicker: false
   };
 
   periods = [
@@ -43,13 +42,11 @@ export class CreateModal implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    // Fetch staff list from backend
     this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
       next: (data) => { this.staff = data; },
       error: (err) => console.error('Connection failed:', err)
     });
 
-    // Auto-fill staff from profile
     const activeProfile = localStorage.getItem('user_profile');
     if (activeProfile) {
       const user = JSON.parse(activeProfile);
@@ -59,18 +56,16 @@ export class CreateModal implements OnInit {
     }
   }
 
-  // FIX: Restore 'onUntilChange' for the date picker change event
+  // RESTORED: Required for the recurring date logic
   onUntilChange() {
     this.data.showDatePicker = (this.data.untilDate === 'Pick Date');
   }
 
   onSubmit() {
-    // Payload keys match the destructuring in flow.route.ts
     const bookingPayload = {
       room: this.roomName,
       date: this.selectedDate,
       period: this.data.period,
-      subject: this.data.department,
       bookedBy: this.selectedStaff,
       bookingType: this.selectedType,
       untilDate: this.data.untilDate === 'Ending of session' ? null : this.data.untilDate
@@ -79,13 +74,11 @@ export class CreateModal implements OnInit {
     this.http.post('http://localhost:3000/api/create', bookingPayload)
       .subscribe({
         next: (response: any) => {
-          alert('Booking saved to MySQL!'); // Success feedback
           this.create.emit(bookingPayload);
           this.close.emit();
         },
         error: (err) => {
           console.error('Frontend Error:', err);
-          alert('Error saving to database! Check your backend terminal for red text.');
         }
       });
   }
