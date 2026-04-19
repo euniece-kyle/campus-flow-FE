@@ -1,164 +1,54 @@
-<div class="layout">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="logo-container">
-        <img src="/assets/cf-logo.png" alt="CampusFlow Logo" class="logo">
+<div class="booking-container">
+  <div class="header-section">
+    <div class="date-navigator">
+      <button class="nav-btn" (click)="changeDate(-1)">Previous</button>
+      <div class="current-date">
+        <input type="date" [value]="dateForInput" (change)="onDateChange($event)">
+        <span>{{ selectedDate | date:'fullDate' }}</span>
       </div>
-      <span class="brand-text">CampusFlow</span>
+      <button class="nav-btn" (click)="changeDate(1)">Next</button>
     </div>
 
-    <nav class="nav">
-      <div class="nav-item" 
-           routerLink="/booking" 
-           routerLinkActive="active"
-           [routerLinkActiveOptions]="{exact: true}">
-        Booking
-        <span class="arrow" *ngIf="router.url === '/booking'">></span>
-      </div>
-      
-      <div class="nav-item" routerLink="/department" routerLinkActive="active">
-        Subjects 
-        <span class="arrow" *ngIf="router.url === '/department'">></span>
-      </div>
-
-      <div class="nav-item" routerLink="/dashboard" routerLinkActive="active">
-        Dashboard
-        <span class="arrow" *ngIf="router.url === '/dashboard'">></span>
-      </div>
-      
-      <div class="nav-item" routerLink="/profile" routerLinkActive="active">
-        Profile 
-        <span class="arrow" *ngIf="router.url === '/profile'">></span>
-      </div>
-    </nav>
-
-    <div class="sign-out" (click)="onSignOut()" style="cursor: pointer;">
-      <div class="sign-out-content">
-        <span class="exit-icon">🚪</span>
-        <span class="sign-out-text">Sign Out</span>
-      </div>
-    </div>
-  </aside>
-
-  <main class="main">
-    <div class="calendar-container">
-      <div class="calendar-box">
-        <span class="date-text">{{ selectedDate | date:'MMMM d, yyyy' }}</span>
-        <span class="calendar-icon">📅</span>
-        <input type="date" [value]="dateForInput" (input)="onDateChange($event)">
-      </div>
-    </div>
-
-    <div class="red-header">
-      <button (click)="changeDate(-1)">Previous</button>
-      <span class="banner-date">{{ selectedDate | date:'EEEE, MMMM d, yyyy' }}</span>
-      <button (click)="changeDate(1)">Next</button>
-    </div>
-
-    <div class="tabs">
+    <div class="building-tabs">
       <button *ngFor="let b of buildings" 
-              (click)="selectBuilding(b)"
-              [class.active-blue]="selectedBuilding === b"
-              [class.inactive-yellow]="selectedBuilding !== b">
+              [class.active]="selectedBuilding === b"
+              (click)="selectBuilding(b)">
         {{ b }}
       </button>
     </div>
+  </div>
 
+  <div class="grid-wrapper">
     <table class="booking-grid">
       <thead>
         <tr>
-          <th></th> 
+          <th></th>
           <th *ngFor="let p of periods">
-            {{ p.label }}<br><small>({{ p.time }})</small>
+            <div class="period-label">{{ p.label }}</div>
+            <div class="period-time">({{ p.time }})</div>
           </th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let room of rooms">
-          <td class="room-label">{{ room }}</td>
-          <td *ngFor="let p of periods">
-            <div class="white-box" 
-                 (click)="openBookingModal(room, p.label)"
-                 [ngClass]="{
-                   'booked-one-time': getBooking(room, p.label)?.type === 'One-Time',
-                   'booked-recurring': getBooking(room, p.label)?.type === 'Recurring'
-                 }">
-              <div class="booking-inner-content" *ngIf="getBooking(room, p.label) as booking">
-                <div class="teacher-name">{{ booking.bookedBy }}</div>
-                <div class="subject-tag">{{ booking.subject }}</div>
-              </div>
-              </div>
+          <td class="room-name">{{ room }}</td>
+          <td *ngFor="let p of periods" 
+              (click)="openBookingModal(room, p.label)"
+              [class.booked]="getBooking(room, p.label)">
+            <div class="cell-content">
+              <span *ngIf="getBooking(room, p.label)" class="booked-tag">Booked</span>
+            </div>
           </td>
         </tr>
       </tbody>
     </table>
-    </main>
-
-  <div class="drawer-overlay" *ngIf="isViewOpen" (click)="closeView()">
-    <div class="drawer-content" (click)="$event.stopPropagation()">
-      <button class="close-x-btn" (click)="closeView()">✕</button>
-
-      <h2 class="drawer-title">Booking <span class="highlight">Information</span></h2>
-      <h3 class="room-header">{{ selectedBooking?.room }}</h3>
-
-      <div class="info-table">
-        <div class="info-row gray-bg">
-          <span class="label">Date:</span>
-          <span class="value">{{ selectedDate | date:'EEEE, MMMM d, yyyy' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="label">Occurs:</span>
-          <span class="value">{{ selectedBooking?.type }}</span>
-        </div>
-        <div class="info-row gray-bg">
-          <span class="label">Period:</span>
-          <span class="value">{{ selectedBooking?.period }} ({{ getPeriodTime(selectedBooking?.period) }})</span>
-        </div>
-        
-        <div class="info-row">
-          <span class="label">Subject:</span>
-          <span class="value">{{ selectedBooking?.subject }}</span>
-        </div>
-
-        <div class="info-row gray-bg">
-          <span class="label">Booked by:</span>
-          <span class="value">{{ selectedBooking?.bookedBy }}</span>
-        </div>
-
-        <ng-container *ngIf="selectedBooking?.type === 'Recurring'">
-          <div class="info-row">
-            <span class="label">Starting from:</span>
-            <span class="value">{{ selectedBooking?.startingFrom }}</span>
-          </div>
-          <div class="info-row gray-bg">
-            <span class="label">Until:</span>
-            <span class="value">{{ selectedBooking?.until }}</span>
-          </div>
-        </ng-container>
-      </div>
-
-      <div class="cancel-action-container">
-        <button class="btn-cancel-action" (click)="showCancelConfirm = true">
-          Cancel Booking
-        </button>
-
-        <div class="confirm-popup-card" *ngIf="showCancelConfirm">
-          <p class="confirm-msg">Cancel {{ selectedBooking?.type | lowercase }} booking?</p>
-          <button class="btn-confirm-yes" (click)="confirmCancel()">Yes, cancel booking</button>
-          <div class="no-keep-link">
-              <span (click)="showCancelConfirm = false">No, keep it</span>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
 <app-create-modal 
   *ngIf="isModalOpen" 
   [roomName]="targetRoom"
-  [selectedDate]="(selectedDate | date:'EEEE, MMMM d, yyyy') ?? ''"
-  [bookedBy]="currentUserDisplayName" 
+  [selectedDate]="selectedDate.toDateString()"
   (close)="closeModal()"
   (create)="handleNewBooking($event)">
 </app-create-modal>
