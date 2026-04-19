@@ -71,7 +71,27 @@
       </div>
     </div>
 
-    <div class="details-panel" *ngIf="isListVisible">
+    <div class="charts-section" style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="chart-container" style="background: white; padding: 20px; border-radius: 12px; height: 300px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <h3 style="margin-bottom: 15px; font-size: 1rem; color: #444;">Booking Trends</h3>
+        <canvas baseChart
+          [data]="lineChartData"
+          [options]="lineChartOptions"
+          [type]="'line'">
+        </canvas>
+      </div>
+
+      <div class="chart-container" style="background: white; padding: 20px; border-radius: 12px; height: 300px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <h3 style="margin-bottom: 15px; font-size: 1rem; color: #444;">Building Distribution</h3>
+        <canvas baseChart
+          [data]="barChartData"
+          [options]="barChartOptions"
+          [type]="'bar'">
+        </canvas>
+      </div>
+    </div>
+
+    <div class="details-panel" *ngIf="isListVisible" style="margin-top: 30px;">
       <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h2 style="font-size: 1.2rem; color: maroon;">Live Booking Details</h2>
         <button (click)="clearAllBookings()" style="background: #fff0f0; color: #ff4d4d; border: 1px solid #ffcccc; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Clear All Data</button>

@@ -1,8 +1,7 @@
 import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { RoomService } from '../../services/room.service'; 
-
+import { RoomService } from '../../services/room.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables, ChartConfiguration, ChartOptions } from 'chart.js';
 
@@ -16,8 +15,7 @@ Chart.register(...registerables);
   styleUrls: ['./dashboard.scss']
 })
 export class DashboardComponent implements OnInit {
-  @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
-
+  @ViewChild(BaseChartDirective) chart: any;
   // --- Component State ---
   isListVisible: boolean = false;
   currentDateRange: number = 7;
