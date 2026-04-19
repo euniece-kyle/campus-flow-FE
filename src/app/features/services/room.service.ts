@@ -10,6 +10,7 @@ export class RoomService {
   bookings$ = this.bookingsSubject.asObservable();
 
   constructor() {
+    // Retrieves local data for immediate UI responsiveness
     const saved = localStorage.getItem('campus_bookings');
     if (saved) {
       try {
