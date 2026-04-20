@@ -17,10 +17,9 @@ import { RoomService } from '../services/room.service';
 export class BookingComponent implements OnInit { 
   selectedBuilding: string = 'SAC Building';
   selectedDate: Date = new Date();
+  bookedRooms: any[] = [];
   
-  // FIXED: Declared correctly for template binding
   currentUserDisplayName: string = ''; 
-  
   isModalOpen: boolean = false;
   targetRoom: string = '';
   targetPeriod: string = '';
@@ -45,23 +44,49 @@ export class BookingComponent implements OnInit {
     const user = this.roomService.getCurrentUser();
     this.currentUserDisplayName = `${user?.firstName || 'Guest'} ${user?.lastName || ''}`;
 
-    this.roomService.bookings$.subscribe(data => {
+      this.roomService.bookings$.subscribe(data => {
       this.savedBookings = data;
     });
     this.loadBookings();
+  }
+
+refreshBookings() {
+    this.roomService.loadAllBookings();
   }
 
   loadBookings() {
     this.roomService.loadAllBookings();
   }
 
-  getBooking(room: string, periodLabel: string) {
-    const formattedDate = this.dateForInput; 
-    return this.savedBookings.find(b => {
-      if (!b.booking_date) return false;
-      const dbDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
-      return b.room_name === room && b.period === periodLabel && dbDate === formattedDate;
-    });
+getBooking(room: string, periodLabel: string) {
+  const formattedDate = this.dateForInput; // This is YYYY-MM-DD
+  return this.savedBookings.find(b => {
+    if (!b.booking_date) return false;
+    
+const dbDate = b.booking_date.split('T')[0];
+      
+    return b.room_name === room && b.period === periodLabel && dbDate === formattedDate;
+  });
+}
+
+getBuildingStyle(roomName: string) {
+    const building = roomName.split(' ')[0]; 
+    const colors: { [key: string]: string } = {
+      'SAC': '#f5a81c', 
+      'NAC': '#4a0000', 
+      'WAC': '#326284', 
+      'EAC': '#E68D76'
+    };
+
+    return {
+      'background-color': colors[building] || '#e9e9e9',
+      'color': 'white',
+      'padding': '8px',
+      'border-radius': '6px',
+      'cursor': 'pointer',
+      'font-size': '0.85rem',
+      'text-align': 'center'
+    };
   }
 
   onDateChange(event: any) {
@@ -70,6 +95,35 @@ export class BookingComponent implements OnInit {
       const parts = val.split('-');
       this.selectedDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
       this.loadBookings();
+    }
+  }
+
+  changeDate(days: number) {
+    const newDate = new Date(this.selectedDate);
+    newDate.setDate(newDate.getDate() + days);
+    this.selectedDate = newDate;
+    this.loadBookings();
+  }
+
+  selectBuilding(building: string) {
+    this.selectedBuilding = building;
+  }
+
+  closeView() {
+    this.isViewOpen = false;
+    this.selectedBooking = null;
+    this.showCancelConfirm = false;
+  }
+
+  confirmCancel() {
+    if (this.selectedBooking && this.selectedBooking.id) {
+      this.http.delete(`http://localhost:3000/api/bookings/${this.selectedBooking.id}`).subscribe({
+        next: () => {
+          this.closeView();
+          this.loadBookings();
+        },
+        error: () => console.error('Error cancelling booking.')
+      });
     }
   }
 
@@ -85,30 +139,9 @@ export class BookingComponent implements OnInit {
     }
   }
 
-  // FIXED: Re-added missing closeView method for the drawer
-  closeView() {
-    this.isViewOpen = false;
-    this.selectedBooking = null;
-    this.showCancelConfirm = false;
-  }
-
-  // FIXED: Re-added missing confirmCancel method for deleting bookings
-  confirmCancel() {
-    if (this.selectedBooking && this.selectedBooking.id) {
-      this.http.delete(`http://localhost:3000/api/bookings/${this.selectedBooking.id}`).subscribe({
-        next: () => {
-          this.loadBookings();
-          this.closeView();
-        },
-        error: (err) => console.error('Delete failed', err)
-      });
-    }
-  }
-
-  // FIXED: Re-added missing onSignOut method for the sidebar
-  onSignOut() {
-    localStorage.removeItem('currentUser');
-    this.router.navigate(['/login']);
+  get rooms(): string[] {
+    const prefix = this.selectedBuilding.split(' ')[0];
+    return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
   }
 
   get dateForInput(): string {
@@ -118,16 +151,16 @@ export class BookingComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  get rooms(): string[] {
-    const prefix = this.selectedBuilding.split(' ')[0];
-    return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
-  }
-
   handleNewBooking(data: any) { this.loadBookings(); this.isModalOpen = false; }
   closeModal() { this.isModalOpen = false; }
-  selectBuilding(b: string) { this.selectedBuilding = b; }
-  changeDate(n: number) { 
-    this.selectedDate.setDate(this.selectedDate.getDate() + n); 
-    this.loadBookings(); 
+  
+  onBookingCreated() { this.refreshBookings();
+  }
+
+  onSignOut() { 
+    // FIXED: [issue] Line 118 - Consistent session clearing
+    localStorage.removeItem('currentUser'); 
+    localStorage.removeItem('campus_bookings');
+    this.router.navigate(['/login']); 
   }
 }

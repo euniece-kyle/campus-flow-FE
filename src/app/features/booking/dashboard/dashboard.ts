@@ -7,7 +7,6 @@ import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables, ChartConfiguration, ChartOptions } from 'chart.js';
 
 Chart.register(...registerables);
-
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -25,23 +24,21 @@ export class DashboardComponent implements OnInit {
   todaysBookings: any[] = [];
   dailyTotal: number = 0;
   periodsPerDay: number = 6;
-  
+
   // --- Stats Logic ---
   buildings: string[] = ['SAC', 'NAC', 'WAC', 'EAC'];
   roomsPerBuilding: number = 5;
-  totalRooms: number = 20; 
-  activeBookings: number = 0; 
-  availableNow: number = 20; 
-  
-  private allSystemBookings: any[] = []; 
+  totalRooms: number = 20;
+  activeBookings: number = 0;
+  availableNow: number = 20;
+
+  private allSystemBookings: any[] = [];
   private roomService = inject(RoomService);
   private http = inject(HttpClient);
-
   // Map for Dynamic UI Color-Coding
   private buildingColorMap: { [key: string]: string } = {
     'SAC': '#f5a81c', 'NAC': '#4a0000', 'WAC': '#326284', 'EAC': '#E68D76'
   };
-
   // --- Chart Configurations ---
   public lineChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
@@ -52,7 +49,7 @@ export class DashboardComponent implements OnInit {
         fill: true,
         tension: 0.4,
         borderColor: '#8b0000',
-        backgroundColor: 'rgba(152, 8, 8, 0.15)', 
+        backgroundColor: 'rgba(152, 8, 8, 0.15)',
         pointBackgroundColor: '#8b0000',
         pointBorderColor: '#fff',
       }
@@ -61,7 +58,7 @@ export class DashboardComponent implements OnInit {
 
   public lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
-    maintainAspectRatio: false, 
+    maintainAspectRatio: false,
     plugins: {
       legend: { display: true, position: 'top' },
     },
@@ -73,7 +70,7 @@ export class DashboardComponent implements OnInit {
 
   public barChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
-    datasets: [] 
+    datasets: []
   };
 
   public barChartOptions: ChartOptions<'bar'> = {
@@ -88,11 +85,11 @@ export class DashboardComponent implements OnInit {
   constructor(public router: Router) {}
 
 ngOnInit(): void {
-    // FIXED: Now this.http will work
     this.http.get<any>('http://localhost:3000/api/stats').subscribe({
       next: (data) => { this.stats = data; },
       error: (err) => console.error('Stats fetch failed', err)
     });
+
     this.totalRooms = this.buildings.length * this.roomsPerBuilding;
 
     this.roomService.bookings$.subscribe((allBookings: any[]) => {
@@ -105,12 +102,8 @@ ngOnInit(): void {
     this.roomService.loadAllBookings();
   }
 
-  /**
-   * FIXED: This is the method your HTML was missing!
-   * It provides the dynamic styling for the Live Booking Details list.
-   */
   getBookingStyle(roomName: string) {
-    const prefix = roomName?.split(' ')[0]; 
+    const prefix = roomName?.split(' ')[0];
     const bgColor = this.buildingColorMap[prefix] || '#e9e9e9';
     return {
       'border-left': `8px solid ${bgColor}`,
@@ -121,11 +114,9 @@ ngOnInit(): void {
       'box-shadow': '0 2px 4px rgba(0,0,0,0.05)'
     };
   }
-
   // FIXED: Improved stat calculation to handle database nulls and date formats
   updateDashboardStats(allBookings: any[]): void {
     const today = this.formatDate(new Date());
-        
     this.todaysBookings = allBookings.filter(b => {
       if (!b.booking_date) return false;
       const bDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
@@ -133,7 +124,7 @@ ngOnInit(): void {
     });
 
     this.activeBookings = this.todaysBookings.length;
-      this.availableNow = this.totalRooms - this.activeBookings;
+    this.availableNow = this.totalRooms - this.activeBookings;
   }
 
   private formatDate(date: Date): string {
@@ -162,7 +153,7 @@ ngOnInit(): void {
     this.barChartData.labels = sortedDates;
     this.barChartData.datasets = this.buildings.map(bName => ({
       label: bName,
-      data: sortedDates.map(date => 
+      data: sortedDates.map(date =>
         bookingsToUse.filter(b => b.booking_date.includes(date) && b.room_name.startsWith(bName)).length
       ),
       backgroundColor: this.buildingColorMap[bName] || '#ccc',
@@ -178,8 +169,6 @@ ngOnInit(): void {
 
   clearAllBookings(): void {
     if(confirm('Are you sure you want to clear all data?')) {
-      // FIXED: If your backend has a clear endpoint, call it here. 
-      // Otherwise, this clears the local stream.
       this.roomService.updateBookings([]);
       this.isListVisible = false;
     }
