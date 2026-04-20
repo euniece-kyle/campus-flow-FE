@@ -29,6 +29,14 @@ export class BookingComponent implements OnInit {
   savedBookings: any[] = [];
   showCancelConfirm: boolean = false;
 
+  // FIXED: [feature] Added state variables to hold data from statsController.ts
+  activeBookings: number = 0;
+  availableNow: number = 0;
+  isListVisible: boolean = false;
+  stats = {
+    totalSubjects: 0
+  };
+
   buildings: string[] = ['SAC Building', 'NAC Building', 'WAC Building', 'EAC Building'];
   periods = [
     { label: 'Period 1', time: '9:00am - 10:30am' },
@@ -51,6 +59,27 @@ export class BookingComponent implements OnInit {
       this.bookedRooms = data; 
     });
     this.loadBookings();
+    // FIXED: [feature] Load statistics on component initialization
+    this.fetchDashboardStats();
+  }
+
+  // FIXED: [feature] Fetching data from your existing statsController.ts backend
+  fetchDashboardStats() {
+    this.http.get('http://localhost:3000/api/stats').subscribe({
+      next: (data: any) => {
+        this.activeBookings = data.totalBookings || 0;
+        this.stats.totalSubjects = data.totalSubjects || 0;
+        // Calculation for card display based on your room table
+        const totalRooms = data.totalRooms || 20; 
+        this.availableNow = totalRooms - this.activeBookings;
+      },
+      error: (err) => console.error('Failed to load stats', err)
+    });
+  }
+
+  // FIXED: [feature] Toggle for the "Live Booking Details" list overlay
+  toggleBookingList() {
+    this.isListVisible = !this.isListVisible;
   }
 
 refreshBookings() {
@@ -127,6 +156,8 @@ getBuildingStyle(roomName: string) {
         next: () => {
           this.closeView();
           this.loadBookings();
+          // FIXED: [update] Refresh stats after a cancellation
+          this.fetchDashboardStats();
         },
         error: () => console.error('Error cancelling booking.')
       });
@@ -157,10 +188,19 @@ getBuildingStyle(roomName: string) {
     return `${year}-${month}-${day}`;
   }
 
-  handleNewBooking(data: any) { this.loadBookings(); this.isModalOpen = false; }
+  handleNewBooking(data: any) { 
+    this.loadBookings(); 
+    this.isModalOpen = false; 
+    // FIXED: [update] Refresh stats after a new booking
+    this.fetchDashboardStats();
+  }
+  
   closeModal() { this.isModalOpen = false; }
   
-  onBookingCreated() { this.refreshBookings();
+  onBookingCreated() { 
+    this.refreshBookings();
+    // FIXED: [update] Refresh stats after a new booking
+    this.fetchDashboardStats();
   }
 
   onSignOut() { 
