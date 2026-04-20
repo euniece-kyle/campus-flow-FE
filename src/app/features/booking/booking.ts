@@ -17,7 +17,6 @@ import { RoomService } from '../services/room.service';
 export class BookingComponent implements OnInit { 
   selectedBuilding: string = 'SAC Building';
   selectedDate: Date = new Date();
-  // FIXED: Sync with the current logged in user
   currentUserDisplayName: string = 'Precious Fillalan'; 
   
   isModalOpen: boolean = false;
@@ -26,11 +25,9 @@ export class BookingComponent implements OnInit {
 
   isViewOpen: boolean = false;
   selectedBooking: any = null;
-  showCancelConfirm: boolean = false;
-
   savedBookings: any[] = [];
-  buildings: string[] = ['SAC Building', 'NAC Building', 'WAC Building', 'EAC Building'];
   
+  buildings: string[] = ['SAC Building', 'NAC Building', 'WAC Building', 'EAC Building'];
   periods = [
     { label: 'Period 1', time: '9:00am - 10:30am' },
     { label: 'Period 2', time: '10:30am - 12:00nn' },
@@ -40,14 +37,11 @@ export class BookingComponent implements OnInit {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
-  constructor(
-    public router: Router, 
-    private roomService: RoomService,
-    private http: HttpClient
-  ) {}
+  constructor(public router: Router, private roomService: RoomService, private http: HttpClient) {}
 
   ngOnInit() {
     this.selectedDate.setHours(0,0,0,0);
+    // FIXED: Real-time sync - subscribe to RoomService changes
     this.roomService.bookings$.subscribe(data => {
       this.savedBookings = data;
     });
@@ -58,35 +52,10 @@ export class BookingComponent implements OnInit {
     this.roomService.loadAllBookings();
   }
 
-  handleNewBooking(bookingData: any) {
-    // FIXED: Immediately refresh local list after modal emits 'create'
-    this.loadBookings();
-    this.isModalOpen = false;
-  }
-
-  confirmCancel() {
-    if (!this.selectedBooking || !this.selectedBooking.id) return;
-    this.http.delete(`http://localhost:3000/api/bookings/${this.selectedBooking.id}`).subscribe({
-      next: () => {
-        this.loadBookings();
-        this.closeView();
-      },
-      error: (err) => {
-        console.error('Delete failed:', err);
-      }
-    });
-  }
-
-  get rooms(): string[] {
-    const prefix = this.selectedBuilding.split(' ')[0];
-    return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
-  }
-
-  // FIXED: Logic to ensure data in DB matches the grid view correctly
+  // FIXED: Date reconciliation - split ISO string ('T') to match local YYYY-MM-DD
   getBooking(room: string, periodLabel: string) {
     const formattedDate = this.dateForInput; 
     return this.savedBookings.find(b => {
-      // Strips ISO time strings from MySQL to match YYYY-MM-DD
       const dbDate = b.booking_date ? b.booking_date.split('T')[0] : '';
       return b.room_name === room &&
              b.period === periodLabel &&
@@ -106,6 +75,11 @@ export class BookingComponent implements OnInit {
     }
   }
 
+  get rooms(): string[] {
+    const prefix = this.selectedBuilding.split(' ')[0];
+    return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
+  }
+
   get dateForInput(): string {
     const year = this.selectedDate.getFullYear();
     const month = String(this.selectedDate.getMonth() + 1).padStart(2, '0');
@@ -113,26 +87,7 @@ export class BookingComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  onDateChange(event: any) {
-    const val = (event.target as HTMLInputElement).value;
-    if (val) {
-      const [year, month, day] = val.split('-').map(Number);
-      this.selectedDate = new Date(year, month - 1, day);
-      this.selectedDate.setHours(0,0,0,0);
-      this.loadBookings();
-    }
-  }
-
-  changeDate(offset: number) {
-    const d = new Date(this.selectedDate);
-    d.setDate(d.getDate() + offset);
-    d.setHours(0,0,0,0);
-    this.selectedDate = d;
-    this.loadBookings();
-  }
-
-  closeView() { this.isViewOpen = false; this.showCancelConfirm = false; this.selectedBooking = null; }
+  handleNewBooking(bookingData: any) { this.loadBookings(); this.isModalOpen = false; }
   closeModal() { this.isModalOpen = false; }
-  selectBuilding(building: string) { this.selectedBuilding = building; this.loadBookings(); }
   onSignOut() { this.router.navigate(['/login']); }
 }

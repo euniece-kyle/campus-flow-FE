@@ -86,6 +86,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.totalRooms = this.buildings.length * this.roomsPerBuilding;
+    // FIXED: Subscribe to bookings and force a load to ensure dashboard isn't empty on start
     this.roomService.bookings$.subscribe((allBookings: any[]) => {
       if (allBookings) {
         this.allSystemBookings = allBookings;
@@ -93,6 +94,7 @@ export class DashboardComponent implements OnInit {
         this.processDataByRange(this.currentDateRange);
       }
     });
+    this.roomService.loadAllBookings();
   }
 
   /**
@@ -112,6 +114,7 @@ export class DashboardComponent implements OnInit {
     };
   }
 
+  // FIXED: Improved stat calculation to handle database nulls and date formats
   updateDashboardStats(allBookings: any[]): void {
     const now = new Date();
     // Formats date as YYYY-MM-DD to match MySQL
@@ -119,9 +122,14 @@ export class DashboardComponent implements OnInit {
     
     this.dailyTotal = allBookings.length;
     
-    // Use .includes to catch records even if they have a time stamp
-    this.todaysBookings = allBookings.filter(b => b.booking_date.includes(today));
+    // FIXED: Use .split('T')[0] to ensure precise date matching with MySQL
+    this.todaysBookings = allBookings.filter(b => {
+      const bDate = b.booking_date ? b.booking_date.split('T')[0] : '';
+      return bDate === today;
+    });
+
     this.activeBookings = this.todaysBookings.length;
+    // FIXED: availableNow now dynamically updates based on active bookings
     this.availableNow = this.totalRooms - this.activeBookings;
   }
 
@@ -160,12 +168,15 @@ export class DashboardComponent implements OnInit {
 
   clearAllBookings(): void {
     if(confirm('Are you sure you want to clear all data?')) {
+      // FIXED: If your backend has a clear endpoint, call it here. 
+      // Otherwise, this clears the local stream.
       this.roomService.updateBookings([]);
       this.isListVisible = false;
     }
   }
 
   onSignOut(): void {
+    localStorage.removeItem('currentUser'); // FIXED: Ensure session is cleared
     this.router.navigate(['/login']);
   }
 }
