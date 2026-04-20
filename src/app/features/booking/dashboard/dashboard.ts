@@ -17,7 +17,6 @@ Chart.register(...registerables);
 })
 export class DashboardComponent implements OnInit {
   // --- Dashboard Stats ---
-  // Using maxCapacity of 20 as defined in your scope 
   maxCapacity: number = 20; 
   totalRooms: number = 20;
   activeBookings: number = 0;
@@ -29,7 +28,7 @@ export class DashboardComponent implements OnInit {
   isListVisible: boolean = false;
   currentDateRange: number = 7;
   todaysBookings: any[] = [];
-  buildings: string[] = ['SAC', 'NAC', 'WAC', 'EAC']; // [cite: 10, 19]
+  buildings: string[] = ['SAC', 'NAC', 'WAC', 'EAC'];
 
   private allSystemBookings: any[] = [];
   private roomService = inject(RoomService);
@@ -58,7 +57,6 @@ export class DashboardComponent implements OnInit {
     datasets: []
   };
 
-  // Chart Options [cite: 23]
   public lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
@@ -74,25 +72,21 @@ export class DashboardComponent implements OnInit {
   constructor(public router: Router) {}
 
   ngOnInit(): void {
-    // Subscribe to the real-time booking stream 
     this.roomService.bookings$.subscribe((allBookings: any[]) => {
       if (allBookings) {
         this.allSystemBookings = allBookings;
         this.updateDashboardStats(allBookings);
         this.processDataByRange(this.currentDateRange);
-        this.cdr.detectChanges(); // Force UI update for real-time tracking 
+        this.cdr.detectChanges();
       }
     });
     this.roomService.loadAllBookings();
   }
 
-  /**
-   * F-1.3 & F-1.8: Calculate Occupancy and Prevent Conflicts [cite: 19, 20]
-   */
+  
   updateDashboardStats(allBookings: any[]): void {
     const today = this.formatDate(new Date());
 
-    // Filter only bookings for the current system date 
     this.todaysBookings = allBookings.filter(b => {
       if (!b.booking_date) return false;
       const bDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
@@ -101,14 +95,10 @@ export class DashboardComponent implements OnInit {
 
     this.activeBookings = this.todaysBookings.length;
     
-    // Real-time subtraction math
     this.availableNow = this.maxCapacity - this.activeBookings;
     this.totalRooms = this.maxCapacity; 
   }
 
-  /**
-   * F-1.8 Conflict Prevention Check (Use this before saving new bookings) 
-   */
   checkConflict(roomName: string, date: string, period: string): boolean {
     return this.allSystemBookings.some(b => 
       b.room_name === roomName && 
@@ -163,14 +153,12 @@ export class DashboardComponent implements OnInit {
     this.isListVisible = !this.isListVisible;
   }
 
-  // Add this to your dashboard.ts file
 clearAllBookings(): void {
   if (confirm('Are you sure you want to clear all booking data for today? This action cannot be undone.')) {
-    // This calls your service to delete the data
     this.roomService.clearBookings().subscribe({
       next: () => {
         alert('All bookings have been cleared.');
-        this.roomService.loadAllBookings(); // Refresh the numbers
+        this.roomService.loadAllBookings();
       },
       error: (err) => {
         console.error('Failed to clear bookings:', err);
@@ -181,7 +169,7 @@ clearAllBookings(): void {
 }
 
   onSignOut(): void {
-    localStorage.removeItem('currentUser'); // [cite: 12]
+    localStorage.removeItem('currentUser');
     this.router.navigate(['/login']);
   }
 }

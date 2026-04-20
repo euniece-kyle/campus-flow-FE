@@ -20,7 +20,6 @@ get allBookingsValue() {
 loadAllBookings() {
     this.http.get<any[]>('http://localhost:3000/api/bookings').subscribe({
       next: (data) => {
-        // FIXED: Using a string-safe comparison to prevent timezone shifts
         const sortedData = data.sort((a, b) => {
           const dateA = a.booking_date.split('T')[0];
           const dateB = b.booking_date.split('T')[0];
@@ -37,7 +36,6 @@ loadAllBookings() {
     return user ? JSON.parse(user) : { firstName: 'Guest', lastName: '' };
   }
 
-  // Ensure this exists in room.service.ts
 clearBookings() {
   return this.http.delete('http://localhost:3000/api/bookings/clear-today');
 }
