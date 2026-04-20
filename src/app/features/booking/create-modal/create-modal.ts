@@ -16,7 +16,7 @@ export class CreateModal implements OnInit {
   @Input() bookedBy: string = '';
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
-  
+
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
   subjects: string[] = ['Art', 'Math', 'Science', 'Drama', 'Languages'];
   staff: any[] = []; 
@@ -26,7 +26,9 @@ export class CreateModal implements OnInit {
     period: '',
     department: '', 
     untilDate: 'Ending of session',
-    showDatePicker: false
+    showDatePicker: false,
+    startDate: '',
+    customUntilDate: ''
   };
 
   periods = [
@@ -41,17 +43,38 @@ export class CreateModal implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
+    // 1. Fetch staff from database
     this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
-      next: (data) => { this.staff = data; },
-      error: (err) => console.error('Connection failed:', err)
+      next: (data) => { 
+        this.staff = data; 
+        this.setDefaultUser();
+      },
+      error: (err) => {
+        console.error('Connection failed:', err);
+        this.setDefaultUser(); // Fallback if API fails
+      }
     });
 
+    // 2. Fetch dynamic subjects
+    this.http.get<any[]>('http://localhost:3000/api/subjects').subscribe({
+      next: (data) => { if(data.length > 0) this.subjects = data.map(s => s.name); }
+    });
+  }
+
+  setDefaultUser() {
+    // Priority 1: Precious Fillalan from Profile/localStorage
     const activeProfile = localStorage.getItem('user_profile');
     if (activeProfile) {
       const user = JSON.parse(activeProfile);
       this.selectedStaff = user.username || `${user.firstName} ${user.lastName}`;
     } else {
-      this.selectedStaff = this.bookedBy || "Guest"; 
+      // Priority 2: Passed from Parent
+      this.selectedStaff = this.bookedBy || "Precious Fillalan"; 
+    }
+
+    // Ensure the current user is actually in the dropdown list
+    if (!this.staff.find(s => s.username === this.selectedStaff)) {
+      this.staff.unshift({ username: this.selectedStaff });
     }
   }
 
@@ -61,16 +84,19 @@ export class CreateModal implements OnInit {
 
   onSubmit() {
     const bookingPayload = {
-      room: this.roomName,
-      date: this.selectedDate,
+      room_name: this.roomName,
+      booking_date: this.selectedDate,
       period: this.data.period,
-      subject: this.data.department, // Fixed mapping to 'subject'
-      bookedBy: this.selectedStaff,
-      bookingType: this.selectedType,
-      untilDate: this.data.untilDate === 'Ending of session' ? null : this.data.untilDate
+      subject: this.data.department,
+      booked_by: this.selectedStaff,
+      booking_type: this.selectedType,
+      until_date: this.selectedType === 'Recurring' 
+        ? (this.data.untilDate === 'Ending of session' ? null : this.data.customUntilDate)
+        : null,
+      status: 'Confirmed'
     };
 
-    this.http.post('http://localhost:3000/api/create', bookingPayload)
+    this.http.post('http://localhost:3000/api/bookings', bookingPayload)
       .subscribe({
         next: (response: any) => {
           this.create.emit(bookingPayload);
