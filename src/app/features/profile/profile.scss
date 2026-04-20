@@ -6,13 +6,12 @@ $red-banner: #8b0000;
 $drawer-bg: #fffcf8;
 $text-maroon: #5D1A1A;
 
-.layout { 
+.layout {
+  width: 240px; 
+  flex-shrink: 0; // CRITICAL: Stops the sidebar from shrinking
+  height: 100vh;
   display: flex; 
-  height: 100vh; 
-  font-family: sans-serif; 
-  background: #fffcf8; 
-  width: 100vw;
-  overflow: hidden;
+  overflow: hidden; // Prevents double scrollbars
 }
 
 .sidebar {
@@ -82,7 +81,12 @@ $text-maroon: #5D1A1A;
   }
 }
 
-.main { flex: 1; padding: 40px; overflow-y: auto; }
+.main { 
+  flex-grow: 1;   // CRITICAL: Tells the main content to take all remaining space
+  padding: 40px; 
+  overflow-y: auto; 
+  background: #fffcf8;
+}
 
 .profile-title {
   color: $yellow-tab; 

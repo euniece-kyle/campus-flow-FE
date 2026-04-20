@@ -118,20 +118,26 @@ export class DashboardComponent implements OnInit {
   updateDashboardStats(allBookings: any[]): void {
     const now = new Date();
     // Formats date as YYYY-MM-DD to match MySQL
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const today = this.formatDate(now);
     
     this.dailyTotal = allBookings.length;
     
-    // FIXED: Use .split('T')[0] to ensure precise date matching with MySQL
     this.todaysBookings = allBookings.filter(b => {
-      const bDate = b.booking_date ? b.booking_date.split('T')[0] : '';
-      return bDate === today;
+if (!b.booking_date) return false;
+    const bDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
+    return bDate === today;
     });
 
     this.activeBookings = this.todaysBookings.length;
-    // FIXED: availableNow now dynamically updates based on active bookings
-    this.availableNow = this.totalRooms - this.activeBookings;
+      this.availableNow = this.totalRooms - this.activeBookings;
   }
+
+  private formatDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
   processDataByRange(days: number): void {
     this.currentDateRange = days;

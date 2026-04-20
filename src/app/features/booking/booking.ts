@@ -57,13 +57,19 @@ export class BookingComponent implements OnInit {
     this.roomService.loadAllBookings();
   }
 
-  getBooking(room: string, periodLabel: string) {
-    const formattedDate = this.dateForInput; 
-    return this.savedBookings.find(b => {
-      const dbDate = b.booking_date ? b.booking_date.split('T')[0] : '';
-      return b.room_name === room && b.period === periodLabel && dbDate === formattedDate;
-    });
-  }
+getBooking(room: string, periodLabel: string) {
+  const formattedDate = this.dateForInput; // This is YYYY-MM-DD
+  return this.savedBookings.find(b => {
+    if (!b.booking_date) return false;
+    
+    // This handles both "2026-04-20T..." and "2026-04-20"
+    const dbDate = b.booking_date.includes('T') 
+      ? b.booking_date.split('T')[0] 
+      : b.booking_date;
+      
+    return b.room_name === room && b.period === periodLabel && dbDate === formattedDate;
+  });
+}
 
   onDateChange(event: any) {
     const val = event.target.value;
