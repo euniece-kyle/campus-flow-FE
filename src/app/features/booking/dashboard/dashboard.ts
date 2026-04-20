@@ -86,8 +86,6 @@ export class DashboardComponent implements OnInit {
   constructor(public router: Router) {}
 
 ngOnInit(): void {
-    this.totalRooms = this.buildings.length * this.roomsPerBuilding;
-
     this.roomService.bookings$.subscribe((allBookings: any[]) => {
       if (allBookings) {
         this.allSystemBookings = allBookings;
