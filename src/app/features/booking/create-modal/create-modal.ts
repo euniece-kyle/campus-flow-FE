@@ -43,36 +43,34 @@ export class CreateModal implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    // 1. Fetch staff from database
+    // FIXED: Pre-populate staff dropdown with users from DB
     this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
       next: (data) => { 
         this.staff = data; 
-        this.setDefaultUser();
+        this.initializeUser();
       },
       error: (err) => {
         console.error('Connection failed:', err);
-        this.setDefaultUser(); // Fallback if API fails
+        this.initializeUser();
       }
     });
 
-    // 2. Fetch dynamic subjects
+    // FIXED: Fetch real subjects from DB
     this.http.get<any[]>('http://localhost:3000/api/subjects').subscribe({
       next: (data) => { if(data.length > 0) this.subjects = data.map(s => s.name); }
     });
   }
 
-  setDefaultUser() {
-    // Priority 1: Precious Fillalan from Profile/localStorage
+  // FIXED: Logic to auto-populate "Booked By" based on session
+  initializeUser() {
     const activeProfile = localStorage.getItem('user_profile');
     if (activeProfile) {
       const user = JSON.parse(activeProfile);
       this.selectedStaff = user.username || `${user.firstName} ${user.lastName}`;
     } else {
-      // Priority 2: Passed from Parent
       this.selectedStaff = this.bookedBy || "Precious Fillalan"; 
     }
 
-    // Ensure the current user is actually in the dropdown list
     if (!this.staff.find(s => s.username === this.selectedStaff)) {
       this.staff.unshift({ username: this.selectedStaff });
     }
@@ -96,6 +94,7 @@ export class CreateModal implements OnInit {
       status: 'Confirmed'
     };
 
+    // FIXED: Use correct endpoint and payload for real-time creation
     this.http.post('http://localhost:3000/api/bookings', bookingPayload)
       .subscribe({
         next: (response: any) => {

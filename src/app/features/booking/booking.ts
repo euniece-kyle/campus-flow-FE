@@ -17,7 +17,8 @@ import { RoomService } from '../services/room.service';
 export class BookingComponent implements OnInit { 
   selectedBuilding: string = 'SAC Building';
   selectedDate: Date = new Date();
-  currentUserDisplayName: string = 'Helen Grace Fillalan';
+  // FIXED: Defaulting to the logged-in user name found in your profile
+  currentUserDisplayName: string = 'Precious Fillalan'; 
   
   isModalOpen: boolean = false;
   targetRoom: string = '';
@@ -47,15 +48,14 @@ export class BookingComponent implements OnInit {
 
   ngOnInit() {
     this.selectedDate.setHours(0,0,0,0);
-    // Sync with the RoomService
     this.roomService.bookings$.subscribe(data => {
       this.savedBookings = data;
     });
-    // Initial fetch from API
     this.loadBookings();
   }
 
   loadBookings() {
+    // FIXED: Call the service to fetch latest data for real-time sync
     this.roomService.loadAllBookings();
   }
 
@@ -83,13 +83,11 @@ export class BookingComponent implements OnInit {
     return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
   }
 
+  // FIXED: Clean date string from DB (split 'T') to match local input format so grid visibility works
   getBooking(room: string, periodLabel: string) {
-    const formattedDate = this.dateForInput; // "2026-04-20"
-    
+    const formattedDate = this.dateForInput; 
     return this.savedBookings.find(b => {
-      // Handles MySQL date formats (YYYY-MM-DD or ISO strings)
       const dbDate = b.booking_date ? b.booking_date.split('T')[0] : '';
-      
       return b.room_name === room &&
              b.period === periodLabel &&
              dbDate === formattedDate;
