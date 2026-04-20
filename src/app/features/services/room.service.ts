@@ -16,7 +16,7 @@ export class RoomService {
 
   // FIXED: Force real-time fetch from MySQL only
   loadAllBookings() {
-    this.http.get<any[]>(this.apiUrl).subscribe({
+    this.http.get<any[]>('http://localhost:3000/api/bookings').subscribe({
       next: (data) => {
         const sortedData = data.sort((a, b) => new Date(a.booking_date).getTime() - new Date(b.booking_date).getTime());
         this.bookingsSubject.next(sortedData);
