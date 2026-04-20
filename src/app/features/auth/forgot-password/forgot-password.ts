@@ -19,7 +19,6 @@ export class ForgotPasswordComponent {
 
   constructor(private router: Router) {}
 
-  // STEP 1: Check if the email is actually registered
   onVerifyEmail() {
     if (!this.email.trim()) {
       alert('Please enter your email address.');
@@ -36,7 +35,6 @@ export class ForgotPasswordComponent {
     }
   }
 
-  // STEP 2: Update the password in the "database"
   onResetPassword() {
     if (!this.newPassword || !this.confirmPassword) {
       alert('Please fill in all fields.');
