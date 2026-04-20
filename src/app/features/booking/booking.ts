@@ -51,6 +51,8 @@ export class BookingComponent implements OnInit {
     this.roomService.bookings$.subscribe(data => {
       this.savedBookings = data;
     });
+    // Trigger initial load from MySQL
+    this.loadBookings();
   }
 
   getPeriodTime(periodLabel: string): string {
@@ -88,12 +90,15 @@ export class BookingComponent implements OnInit {
 
   getBooking(room: string, periodLabel: string) {
     const formattedDate = this.dateForInput; // Example: "2026-04-20"
-    return this.savedBookings.find(b =>
-      b.room_name === room &&
-      b.period === periodLabel &&
-      // FIX: Use includes to handle timestamps from MySQL correctly
-      b.booking_date.includes(formattedDate)
-    );
+    
+    return this.savedBookings.find(b => {
+      // FIXED: Ensure we are comparing just the 'YYYY-MM-DD' part of the database date
+      const dbDate = b.booking_date ? b.booking_date.split('T')[0] : '';
+      
+      return b.room_name === room &&
+             b.period === periodLabel &&
+             dbDate === formattedDate;
+    });
   }
 
   openBookingModal(room: string, periodLabel: string) {
