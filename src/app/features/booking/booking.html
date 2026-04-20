@@ -8,27 +8,20 @@
     </div>
 
     <nav class="nav">
-      <div class="nav-item" 
-           routerLink="/booking" 
-           routerLinkActive="active"
-           [routerLinkActiveOptions]="{exact: true}">
-        Booking
-        <span class="arrow" *ngIf="router.url === '/booking'">></span>
+      <div class="nav-item" routerLink="/booking" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        Booking <span class="arrow" *ngIf="router.url === '/booking'">></span>
       </div>
       
       <div class="nav-item" routerLink="/department" routerLinkActive="active">
-        Subjects 
-        <span class="arrow" *ngIf="router.url === '/department'">></span>
+        Subjects <span class="arrow" *ngIf="router.url === '/department'">></span>
       </div>
 
       <div class="nav-item" routerLink="/dashboard" routerLinkActive="active">
-        Dashboard
-        <span class="arrow" *ngIf="router.url === '/dashboard'">></span>
+        Dashboard <span class="arrow" *ngIf="router.url === '/dashboard'">></span>
       </div>
       
       <div class="nav-item" routerLink="/profile" routerLinkActive="active">
-        Profile 
-        <span class="arrow" *ngIf="router.url === '/profile'">></span>
+        Profile <span class="arrow" *ngIf="router.url === '/profile'">></span>
       </div>
     </nav>
 

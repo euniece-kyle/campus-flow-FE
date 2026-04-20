@@ -8,28 +8,13 @@
     </div>
 
     <nav class="nav">
-      <div class="nav-item" routerLink="/booking" routerLinkActive="active">
-        Booking
-        <span class="arrow" *ngIf="router.url === '/booking'">></span>
-      </div>
-      
-      <div class="nav-item" routerLink="/department" routerLinkActive="active">
-        Subjects 
-        <span class="arrow" *ngIf="router.url === '/department'">></span>
-      </div>
-
-      <div class="nav-item" routerLink="/dashboard" routerLinkActive="active">
-        Dashboard
-        <span class="arrow" *ngIf="router.url === '/dashboard'">></span>
-      </div>
-      
-      <div class="nav-item" routerLink="/profile" routerLinkActive="active">
-        Profile 
-        <span class="arrow" *ngIf="router.url === '/profile'">></span>
-      </div>
+      <div class="nav-item" routerLink="/booking" routerLinkActive="active">Booking</div>
+      <div class="nav-item" routerLink="/department" routerLinkActive="active">Subjects</div>
+      <div class="nav-item" routerLink="/dashboard" routerLinkActive="active">Dashboard</div>
+      <div class="nav-item" routerLink="/profile" routerLinkActive="active">Profile</div>
     </nav>
 
-    <div class="sign-out" (click)="onSignOut()" style="cursor: pointer;">
+    <div class="sign-out" (click)="onSignOut()">
       <div class="sign-out-content">
         <span class="exit-icon">🚪</span>
         <span class="sign-out-text">Sign Out</span>
@@ -38,82 +23,63 @@
   </aside>
 
   <main class="main">
-    <header class="dashboard-header">
-      <h1 class="dashboard-title">Dashboard</h1>
-      <p class="welcome-msg">
-        Welcome to <span class="brand-highlight">CampusFlow</span>. Here is today's overview.
-      </p>
+    <header class="header">
+      <h1>Campus Dashboard</h1>
+      <p>Real-time overview of room utilization and bookings.</p>
     </header>
 
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="icon-circle red-light-bg">🏫</div>
-        <div class="stat-info">
-          <h3>{{ totalRooms }}</h3>
-          <p>Total Rooms</p>
-        </div>
+        <h3>Today's Active Bookings</h3>
+        <p class="stat-value">{{ activeBookings }}</p>
       </div>
-
-      <div class="stat-card clickable" (click)="toggleBookingList()" style="cursor: pointer;">
-        <div class="icon-circle gold-light-bg">📍</div>
-        <div class="stat-info">
-          <h3>{{ activeBookings }}</h3>
-          <p>Active Bookings</p>
-        </div>
-      </div>
-
       <div class="stat-card">
-        <div class="icon-circle green-light-bg">🔓</div>
-        <div class="stat-info">
-          <h3>{{ availableNow }}</h3>
-          <p>Available Now</p>
+        <h3>Rooms Available Now</h3>
+        <p class="stat-value">{{ availableNow }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Total Subjects</h3>
+        <p class="stat-value">{{ stats.totalSubjects }}</p>
+      </div>
+      <div class="stat-card btn-list" (click)="toggleBookingList()">
+        <h3>Live Booking Details</h3>
+        <p class="stat-link">{{ isListVisible ? 'Hide List' : 'View List' }}</p>
+      </div>
+    </div>
+
+    <div class="charts-container">
+      <div class="chart-box">
+        <h3>Booking Trends</h3>
+        <div class="canvas-wrapper">
+          <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" [type]="'line'"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <h3>Building Distribution</h3>
+        <div class="canvas-wrapper">
+          <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="'bar'"></canvas>
         </div>
       </div>
     </div>
 
-    <div class="charts-section" style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-      <div class="chart-container" style="background: white; padding: 20px; border-radius: 12px; height: 300px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-        <h3 style="margin-bottom: 15px; font-size: 1rem; color: #444;">Booking Trends</h3>
-        <canvas baseChart
-          [data]="lineChartData"
-          [options]="lineChartOptions"
-          [type]="'line'">
-        </canvas>
-      </div>
-
-      <div class="chart-container" style="background: white; padding: 20px; border-radius: 12px; height: 300px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-        <h3 style="margin-bottom: 15px; font-size: 1rem; color: #444;">Building Distribution</h3>
-        <canvas baseChart
-          [data]="barChartData"
-          [options]="barChartOptions"
-          [type]="'bar'">
-        </canvas>
-      </div>
-    </div>
-
-    <div class="details-panel" *ngIf="isListVisible" style="margin-top: 30px;">
-      <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h2 style="font-size: 1.2rem; color: maroon;">Live Booking Details</h2>
-        <button (click)="clearAllBookings()" style="background: #fff0f0; color: #ff4d4d; border: 1px solid #ffcccc; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Clear All Data</button>
-      </div>
-
-      <div class="booking-list" style="display: grid; gap: 10px;">
-        <div *ngIf="todaysBookings.length === 0" style="text-align: center; padding: 20px; color: #666;">
-          No bookings found for today.
+    <div class="booking-list-overlay" *ngIf="isListVisible">
+      <div class="booking-list-card">
+        <div class="list-header">
+          <h2>Today's Schedule</h2>
+          <button class="close-btn" (click)="toggleBookingList()">✕</button>
         </div>
-
-        <div *ngFor="let b of todaysBookings" class="detail-item" [ngStyle]="getBookingStyle(b.room_name)" style="padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; background: white;">
-          <div>
-            <span style="font-weight: bold; color: #333; display: block;">{{ b.room_name }}</span>
-            <span style="font-size: 0.85rem; color: #666;">{{ b.period }}</span>
-          </div>
-          <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-            <span style="font-size: 0.9rem; color: #444;">{{ b.booked_by }}</span>
-            <div style="display: flex; gap: 6px;">
-              <span style="font-size: 0.75rem; background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px;">{{ b.subject }}</span>
-              <span style="font-size: 0.75rem; background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 10px;">Confirmed</span>
+        <div class="list-content">
+          <div *ngFor="let booking of todaysBookings" [ngStyle]="getBookingStyle(booking.room_name)">
+            <div class="info">
+              <span class="room-num">{{ booking.room_name }}</span>
+              <span class="subject-name">{{ booking.subject }}</span>
+            </div>
+            <div class="time-user">
+              <span class="period-tag">{{ booking.period }}</span>
+              <span class="booked-by">By: {{ booking.booked_by }}</span>
             </div>
           </div>
+          <p *ngIf="todaysBookings.length === 0" class="empty-msg">No active bookings for today.</p>
         </div>
       </div>
     </div>

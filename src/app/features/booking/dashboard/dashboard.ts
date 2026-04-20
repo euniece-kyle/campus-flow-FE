@@ -62,12 +62,10 @@ export class DashboardComponent implements OnInit {
   public lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false, 
-    plugins: {
-      legend: { display: true, position: 'top' },
-    },
-    scales: {
+    plugins: { legend: { display: true, position: 'top' } },
+    scales: { 
       x: { grid: { display: false } },
-      y: { beginAtZero: true, type: 'linear', ticks: { stepSize: 1 } }
+      y: { beginAtZero: true, ticks: { stepSize: 1 } }
     }
   };
 
@@ -81,7 +79,7 @@ export class DashboardComponent implements OnInit {
     maintainAspectRatio: false,
     scales: {
       x: { stacked: true, grid: { display: false } },
-      y: { stacked: true, beginAtZero: true, type: 'linear', ticks: { stepSize: 1 } }
+      y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } }
     }
   };
 
@@ -93,7 +91,6 @@ ngOnInit(): void {
       next: (data) => { this.stats = data; },
       error: (err) => console.error('Stats fetch failed', err)
     });
-    this.totalRooms = this.buildings.length * this.roomsPerBuilding;
 
     this.roomService.bookings$.subscribe((allBookings: any[]) => {
       if (allBookings) {
@@ -118,7 +115,10 @@ ngOnInit(): void {
       'padding': '15px',
       'border-radius': '8px',
       'margin-bottom': '10px',
-      'box-shadow': '0 2px 4px rgba(0,0,0,0.05)'
+      'box-shadow': '0 2px 4px rgba(0,0,0,0.05)',
+      'display': 'flex',
+      'justify-content': 'space-between',
+      'align-items': 'center'
     };
   }
 
@@ -133,14 +133,14 @@ ngOnInit(): void {
     });
 
     this.activeBookings = this.todaysBookings.length;
-      this.availableNow = this.totalRooms - this.activeBookings;
+      this.availableNow = Math.max(0, this.totalRooms - this.activeBookings);
   }
 
   private formatDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
   processDataByRange(days: number): void {
@@ -160,21 +160,19 @@ ngOnInit(): void {
     this.lineChartData.datasets[0].data = sortedDates.map(d => dateMap[d]);
 
     this.barChartData.labels = sortedDates;
-    this.barChartData.datasets = this.buildings.map(bName => ({
+    this.barChartData.datasets = ['SAC', 'NAC', 'WAC', 'EAC'].map(bName => ({
       label: bName,
       data: sortedDates.map(date => 
-        bookingsToUse.filter(b => b.booking_date.includes(date) && b.room_name.startsWith(bName)).length
+        bookingsToUse.filter(b => b.booking_date.includes(date) && b.room_name.includes(bName)).length
       ),
-      backgroundColor: this.buildingColorMap[bName] || '#ccc',
+      backgroundColor: this.buildingColorMap[bName],
       stack: 'buildingStack'
     }));
 
     if (this.chart) this.chart.update();
   }
 
-  toggleBookingList(): void {
-    this.isListVisible = !this.isListVisible;
-  }
+  toggleBookingList(): void { this.isListVisible = !this.isListVisible; }
 
   clearAllBookings(): void {
     if(confirm('Are you sure you want to clear all data?')) {
