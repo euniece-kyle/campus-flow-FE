@@ -35,10 +35,10 @@
 
       <label>Subject:</label>
       <div class="form-value dropdown-wrapper">
-        <select [(ngModel)]="data.department" class="native-look">
-          <option value="" disabled selected>Select a Subject</option>
-          <option *ngFor="let s of subjects" [value]="s">{{ s }}</option>
-        </select>
+<select [(ngModel)]="data.department" name="department">
+  <option value="" disabled>Select Subject</option>
+  <option *ngFor="let s of subjects" [value]="s.name">{{ s.name }}</option>
+</select>
         <span class="arrow-icon">▼</span>
       </div>
 

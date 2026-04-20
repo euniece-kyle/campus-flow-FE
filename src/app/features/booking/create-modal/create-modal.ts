@@ -18,7 +18,9 @@ export class CreateModal implements OnInit {
   @Output() create = new EventEmitter<any>();
 
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
-  subjects: string[] = ['Art', 'Math', 'Science', 'Drama', 'Languages'];
+  subjects: any[] = [];
+  
+  // FIX FOR LINE 49: Adding the staff array
   staff: any[] = []; 
   selectedStaff: string = ''; 
 
@@ -43,39 +45,23 @@ export class CreateModal implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    // FIXED: Pre-populate staff dropdown with users from DB
-    this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
-      next: (data) => { 
-        this.staff = data; 
-        this.initializeUser();
-      },
-      error: (err) => {
-        console.error('Connection failed:', err);
-        this.initializeUser();
-      }
-    });
-
-    // FIXED: Fetch real subjects from DB
+    // Load subjects from MySQL
     this.http.get<any[]>('http://localhost:3000/api/subjects').subscribe({
-      next: (data) => { if(data.length > 0) this.subjects = data.map(s => s.name); }
+      next: (res) => this.subjects = res,
+      error: (err) => console.error('Subject Load Error', err)
+    });
+
+    // Load users/staff from MySQL to fix the dropdown
+    this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
+      next: (res) => {
+        this.staff = res;
+        this.selectedStaff = this.bookedBy || "Precious Fillalan";
+      },
+      error: (err) => console.error('User Load Error', err)
     });
   }
 
-  // FIXED: Logic to auto-populate "Booked By" based on session
-  initializeUser() {
-    const activeProfile = localStorage.getItem('user_profile');
-    if (activeProfile) {
-      const user = JSON.parse(activeProfile);
-      this.selectedStaff = user.username || `${user.firstName} ${user.lastName}`;
-    } else {
-      this.selectedStaff = this.bookedBy || "Precious Fillalan"; 
-    }
-
-    if (!this.staff.find(s => s.username === this.selectedStaff)) {
-      this.staff.unshift({ username: this.selectedStaff });
-    }
-  }
-
+  // FIX FOR LINE 65: Adding the missing function
   onUntilChange() {
     this.data.showDatePicker = (this.data.untilDate === 'Pick Date');
   }
@@ -88,24 +74,16 @@ export class CreateModal implements OnInit {
       subject: this.data.department,
       booked_by: this.selectedStaff,
       booking_type: this.selectedType,
-      until_date: this.selectedType === 'Recurring' 
-        ? (this.data.untilDate === 'Ending of session' ? null : this.data.customUntilDate)
-        : null,
       status: 'Confirmed'
     };
 
-    // FIXED: Use correct endpoint and payload for real-time creation
-    this.http.post('http://localhost:3000/api/bookings', bookingPayload)
-      .subscribe({
-        next: (response: any) => {
-          this.create.emit(bookingPayload);
-          this.close.emit();
-        },
-        error: (err) => {
-          console.error('Frontend Error:', err);
-          alert('Submission failed. Check backend terminal!');
-        }
-      });
+    this.http.post('http://localhost:3000/api/bookings', bookingPayload).subscribe({
+      next: (response: any) => {
+        this.create.emit(response);
+        this.close.emit();
+      },
+      error: (err) => alert('Save failed!')
+    });
   }
 
   closeModal() {
