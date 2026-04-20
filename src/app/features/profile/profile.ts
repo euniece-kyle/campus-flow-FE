@@ -26,7 +26,6 @@ export class ProfileComponent implements OnInit {
   isEditing: boolean = false;
   isChangingPassword: boolean = false;
   
-  // FIXED: Added variables for OTP presentation logic
   otpSent: boolean = false;
   isVerified: boolean = false;
   otpInput: string = '';
@@ -50,19 +49,17 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // FIXED: Security requirement - Show ALL ASTERISKS (**)
   generatePasswordHint() {
     this.maskedPasswordHint = '********';
   }
 
-  // FIXED: OTP functionality for presentation
   sendOTP() {
     this.otpSent = true;
     alert(`A security OTP code has been sent to ${this.user.email}`);
   }
 
   verifyOTP() {
-    if (this.otpInput === '1234') { // Presentation dummy code
+    if (this.otpInput === '1234') {
       this.isVerified = true;
       this.isChangingPassword = true;
       alert('Identity Verified Successfully.');

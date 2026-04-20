@@ -16,7 +16,6 @@ export class DepartmentComponent implements OnInit {
   subjects: any[] = [];
   isAdding: boolean = false;
   
-  // Update this URL to match your Hono backend port
   private apiUrl = 'http://localhost:3000/api/subjects';
 
   constructor(public router: Router, private http: HttpClient) {}
@@ -28,7 +27,6 @@ export class DepartmentComponent implements OnInit {
   fetchSubjects() {
     this.http.get<any[]>(this.apiUrl).subscribe({
       next: (data) => {
-        // Sort subjects alphabetically by name
         this.subjects = data.sort((a, b) => a.name.localeCompare(b.name));
       },
       error: (err) => {
