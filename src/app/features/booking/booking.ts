@@ -47,17 +47,12 @@ export class BookingComponent implements OnInit {
 
   ngOnInit() {
     this.selectedDate.setHours(0,0,0,0);
-    // Subscribe to the service so the grid updates when the DB data arrives
+    // Sync with the RoomService
     this.roomService.bookings$.subscribe(data => {
       this.savedBookings = data;
     });
-    // Trigger initial load from MySQL
+    // Initial fetch from API
     this.loadBookings();
-  }
-
-  getPeriodTime(periodLabel: string): string {
-    const period = this.periods.find(p => p.label === periodLabel);
-    return period ? period.time : '';
   }
 
   loadBookings() {
@@ -89,10 +84,10 @@ export class BookingComponent implements OnInit {
   }
 
   getBooking(room: string, periodLabel: string) {
-    const formattedDate = this.dateForInput; // Example: "2026-04-20"
+    const formattedDate = this.dateForInput; // "2026-04-20"
     
     return this.savedBookings.find(b => {
-      // FIXED: Ensure we are comparing just the 'YYYY-MM-DD' part of the database date
+      // Handles MySQL date formats (YYYY-MM-DD or ISO strings)
       const dbDate = b.booking_date ? b.booking_date.split('T')[0] : '';
       
       return b.room_name === room &&
@@ -126,6 +121,7 @@ export class BookingComponent implements OnInit {
       const [year, month, day] = val.split('-').map(Number);
       this.selectedDate = new Date(year, month - 1, day);
       this.selectedDate.setHours(0,0,0,0);
+      this.loadBookings();
     }
   }
 
@@ -134,10 +130,11 @@ export class BookingComponent implements OnInit {
     d.setDate(d.getDate() + offset);
     d.setHours(0,0,0,0);
     this.selectedDate = d;
+    this.loadBookings();
   }
 
   closeView() { this.isViewOpen = false; this.showCancelConfirm = false; this.selectedBooking = null; }
   closeModal() { this.isModalOpen = false; }
-  selectBuilding(building: string) { this.selectedBuilding = building; }
+  selectBuilding(building: string) { this.selectedBuilding = building; this.loadBookings(); }
   onSignOut() { this.router.navigate(['/login']); }
 }
