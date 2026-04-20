@@ -16,6 +16,7 @@ Chart.register(...registerables);
 })
 export class DashboardComponent implements OnInit {
   @ViewChild(BaseChartDirective) chart: any;
+
   // --- Component State ---
   isListVisible: boolean = false;
   currentDateRange: number = 7;
@@ -60,7 +61,6 @@ export class DashboardComponent implements OnInit {
     maintainAspectRatio: false, 
     plugins: {
       legend: { display: true, position: 'top' },
-      tooltip: { mode: 'index', intersect: false }
     },
     scales: {
       x: { grid: { display: false } },
@@ -76,9 +76,6 @@ export class DashboardComponent implements OnInit {
   public barChartOptions: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: { display: true, position: 'top' },
-    },
     scales: {
       x: { stacked: true, grid: { display: false } },
       y: { stacked: true, beginAtZero: true, type: 'linear', ticks: { stepSize: 1 } }
@@ -98,93 +95,63 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  // Helper for dynamic coloring in the Template
+  /**
+   * FIXED: This is the method your HTML was missing!
+   * It provides the dynamic styling for the Live Booking Details list.
+   */
   getBookingStyle(roomName: string) {
     const prefix = roomName?.split(' ')[0]; 
     const bgColor = this.buildingColorMap[prefix] || '#e9e9e9';
     return {
       'border-left': `8px solid ${bgColor}`,
-      'background-color': '#ffffff'
+      'background-color': '#ffffff',
+      'padding': '15px',
+      'border-radius': '8px',
+      'margin-bottom': '10px',
+      'box-shadow': '0 2px 4px rgba(0,0,0,0.05)'
     };
   }
 
   updateDashboardStats(allBookings: any[]): void {
-    // Generate today's date in YYYY-MM-DD format
     const now = new Date();
+    // Formats date as YYYY-MM-DD to match MySQL
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     
     this.dailyTotal = allBookings.length;
     
-    // FIXED: Use .includes(today) to match the DB format correctly
+    // Use .includes to catch records even if they have a time stamp
     this.todaysBookings = allBookings.filter(b => b.booking_date.includes(today));
     this.activeBookings = this.todaysBookings.length;
     this.availableNow = this.totalRooms - this.activeBookings;
   }
 
-  changeDateRange(days: number): void {
-    this.currentDateRange = days;
-    this.processDataByRange(days);
-  }
-
   processDataByRange(days: number): void {
     this.currentDateRange = days;
-    let filteredBookings = [...this.allSystemBookings];
-
-    if (days > 0) {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - days);
-      cutoffDate.setHours(0, 0, 0, 0);
-      
-      filteredBookings = this.allSystemBookings.filter(b => {
-        const bookingDate = new Date(b.booking_date);
-        return bookingDate >= cutoffDate;
-      });
-    }
-
-    this.updateCharts(filteredBookings);
+    this.updateCharts(this.allSystemBookings);
   }
 
   updateCharts(bookingsToUse: any[]): void {
     const dateMap: { [key: string]: number } = {};
     bookingsToUse.forEach(b => {
-      // Clean the date string for chart labels
       const d = b.booking_date.split('T')[0];
       dateMap[d] = (dateMap[d] || 0) + 1;
     });
 
-    const sortedDates = Object.keys(dateMap).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-    
-    const displayLabels = sortedDates.map(d => {
-      const dt = new Date(d);
-      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    });
-
-    this.lineChartData.labels = displayLabels;
+    const sortedDates = Object.keys(dateMap).sort();
+    this.lineChartData.labels = sortedDates;
     this.lineChartData.datasets[0].data = sortedDates.map(d => dateMap[d]);
 
-    this.barChartData.labels = displayLabels;
-    
+    this.barChartData.labels = sortedDates;
     this.barChartData.datasets = this.buildings.map(bName => ({
       label: bName,
       data: sortedDates.map(date => 
-        // FIXED: Match room name and date string
         bookingsToUse.filter(b => b.booking_date.includes(date) && b.room_name.startsWith(bName)).length
       ),
       backgroundColor: this.buildingColorMap[bName] || '#ccc',
-      borderColor: '#fff',
-      borderWidth: 1,
       stack: 'buildingStack'
     }));
 
-    if (this.chart) {
-        this.chart.update();
-    }
-    
-    setTimeout(() => {
-      if (this.chart && this.chart.chart) {
-        this.chart.chart.update();
-      }
-    }, 100);
+    if (this.chart) this.chart.update();
   }
 
   toggleBookingList(): void {
@@ -193,7 +160,6 @@ export class DashboardComponent implements OnInit {
 
   clearAllBookings(): void {
     if(confirm('Are you sure you want to clear all data?')) {
-      localStorage.removeItem('campus_bookings');
       this.roomService.updateBookings([]);
       this.isListVisible = false;
     }

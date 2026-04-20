@@ -45,9 +45,9 @@ export class BookingComponent implements OnInit {
     private http: HttpClient
   ) {}
 
-ngOnInit() {
+  ngOnInit() {
     this.selectedDate.setHours(0,0,0,0);
-    // Subscribe to service so UI updates when DB data arrives
+    // Subscribe to the service so the grid updates when the DB data arrives
     this.roomService.bookings$.subscribe(data => {
       this.savedBookings = data;
     });
@@ -58,8 +58,7 @@ ngOnInit() {
     return period ? period.time : '';
   }
 
-loadBookings() {
-    // Tell the service to fetch fresh data from the API
+  loadBookings() {
     this.roomService.loadAllBookings();
   }
 
@@ -77,7 +76,7 @@ loadBookings() {
       },
       error: (err) => {
         console.error('Delete failed:', err);
-        alert('Could not cancel booking. Please check backend connection.');
+        alert('Could not cancel booking.');
       }
     });
   }
@@ -88,10 +87,11 @@ loadBookings() {
   }
 
   getBooking(room: string, periodLabel: string) {
-    const formattedDate = this.dateForInput;
+    const formattedDate = this.dateForInput; // Example: "2026-04-20"
     return this.savedBookings.find(b =>
       b.room_name === room &&
       b.period === periodLabel &&
+      // FIX: Use includes to handle timestamps from MySQL correctly
       b.booking_date.includes(formattedDate)
     );
   }
