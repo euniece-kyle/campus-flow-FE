@@ -20,7 +20,6 @@ export class CreateModal implements OnInit {
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
   subjects: any[] = [];
   
-  // FIX FOR LINE 49: Adding the staff array
   staff: any[] = []; 
   selectedStaff: string = ''; 
 
@@ -45,13 +44,11 @@ export class CreateModal implements OnInit {
   constructor(private http: HttpClient) {}
 
 ngOnInit() {
-  // 1. Load subjects from MySQL
   this.http.get<any[]>('http://localhost:3000/api/subjects').subscribe({
     next: (res) => this.subjects = res,
     error: (err) => console.error('Subject Load Error', err)
   });
 
-  // 2. Load staff AND auto-select current user
   this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
     next: (res) => {
       this.staff = res;
@@ -59,23 +56,20 @@ ngOnInit() {
       const savedUser = localStorage.getItem('currentUser');
       if (savedUser) {
         const loggedInUser = JSON.parse(savedUser);
-        // Combine names to match the "Booked By" format
         this.selectedStaff = `${loggedInUser.firstName} ${loggedInUser.lastName}`;
       } else {
-        this.selectedStaff = "Precious Fillalan"; // Fallback
+        this.selectedStaff = "Precious Fillalan";
       }
     },
     error: (err) => console.error('User Load Error', err)
   });
 }
 
-  // FIX FOR LINE 65: Adding the missing function
   onUntilChange() {
     this.data.showDatePicker = (this.data.untilDate === 'Pick Date');
   }
 
 onSubmit() {
-  // Construct the payload to match your MySQL table columns
   const bookingPayload = {
     room_name: this.roomName,
     booking_date: this.selectedDate,
@@ -91,8 +85,8 @@ onSubmit() {
     next: (res) => {
       alert('Booking saved successfully!');
       this.create.emit(res);
-      this.close.emit(); // Close modal
-      window.location.reload(); // Refresh to show on grid
+      this.close.emit();
+      window.location.reload();
     },
     error: (err) => {
       console.error('Booking failed', err);
