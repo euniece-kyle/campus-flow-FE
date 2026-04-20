@@ -15,6 +15,7 @@ import { RoomService } from '../services/room.service';
   providers: [DatePipe]
 })
 export class BookingComponent implements OnInit { 
+  bookedRooms: any[] = [];
   selectedBuilding: string = 'SAC Building';
   selectedDate: Date = new Date();
   
@@ -42,6 +43,7 @@ export class BookingComponent implements OnInit {
   constructor(public router: Router, private roomService: RoomService, private http: HttpClient) {}
 
   ngOnInit() {
+    this.refreshBookings();
     // FIXED: [issue] Line 42 - Added optional chaining to handle potential null user
     const user = this.roomService.getCurrentUser();
     this.currentUserDisplayName = `${user?.firstName || 'Guest'} ${user?.lastName || ''}`;
@@ -51,6 +53,16 @@ export class BookingComponent implements OnInit {
       this.savedBookings = data;
     });
     this.loadBookings();
+  }
+
+  refreshBookings() {
+    this.http.get<any[]>('http://localhost:3000/api/bookings').subscribe({
+      next: (data) => {
+        this.bookedRooms = data;
+        // This ensures the grid updates immediately
+      },
+      error: (err) => console.error('Booking fetch failed', err)
+    });
   }
 
   loadBookings() {
@@ -136,6 +148,10 @@ getBooking(room: string, periodLabel: string) {
   handleNewBooking(data: any) { this.loadBookings(); this.isModalOpen = false; }
   closeModal() { this.isModalOpen = false; }
   
+  onBookingCreated() {
+    this.refreshBookings();
+  }
+
   onSignOut() { 
     // FIXED: [issue] Line 118 - Consistent session clearing
     localStorage.removeItem('currentUser'); 

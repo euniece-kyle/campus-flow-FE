@@ -42,6 +42,7 @@ export class ProfileComponent implements OnInit {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       this.user = JSON.parse(savedUser);
+      console.log("Current User ID:", this.user.id);
       this.generatePasswordHint();
       this.updateInitials();
     } else {

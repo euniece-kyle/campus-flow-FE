@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RoomService } from '../../services/room.service';
+import { HttpClient } from '@angular/common/http';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables, ChartConfiguration, ChartOptions } from 'chart.js';
 
@@ -15,6 +16,7 @@ Chart.register(...registerables);
   styleUrls: ['./dashboard.scss']
 })
 export class DashboardComponent implements OnInit {
+  stats = { totalBookings: 0, totalSubjects: 0 };
   @ViewChild(BaseChartDirective) chart: any;
 
   // --- Component State ---
@@ -33,6 +35,7 @@ export class DashboardComponent implements OnInit {
   
   private allSystemBookings: any[] = []; 
   private roomService = inject(RoomService);
+  private http = inject(HttpClient);
 
   // Map for Dynamic UI Color-Coding
   private buildingColorMap: { [key: string]: string } = {
@@ -84,9 +87,14 @@ export class DashboardComponent implements OnInit {
 
   constructor(public router: Router) {}
 
-  ngOnInit(): void {
+ngOnInit(): void {
+    // FIXED: Now this.http will work
+    this.http.get<any>('http://localhost:3000/api/stats').subscribe({
+      next: (data) => { this.stats = data; },
+      error: (err) => console.error('Stats fetch failed', err)
+    });
     this.totalRooms = this.buildings.length * this.roomsPerBuilding;
-    // FIXED: Subscribe to bookings and force a load to ensure dashboard isn't empty on start
+
     this.roomService.bookings$.subscribe((allBookings: any[]) => {
       if (allBookings) {
         this.allSystemBookings = allBookings;
