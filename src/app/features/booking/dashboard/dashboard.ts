@@ -7,6 +7,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables, ChartConfiguration, ChartOptions } from 'chart.js';
 
 Chart.register(...registerables);
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -15,59 +16,41 @@ Chart.register(...registerables);
   styleUrls: ['./dashboard.scss']
 })
 export class DashboardComponent implements OnInit {
-  stats = { totalBookings: 0, totalSubjects: 0 };
-  @ViewChild(BaseChartDirective) chart: any;
-
-  // --- Component State ---
-  isListVisible: boolean = false;
-  currentDateRange: number = 7;
-  todaysBookings: any[] = [];
-  dailyTotal: number = 0;
-  periodsPerDay: number = 6;
-
-  // --- Stats Logic ---
-  buildings: string[] = ['SAC', 'NAC', 'WAC', 'EAC'];
-  roomsPerBuilding: number = 5;
-  maxCapacity: number = 20;
+  // --- Dashboard Stats ---
+  // Using maxCapacity of 20 as defined in your scope 
+  maxCapacity: number = 20; 
   totalRooms: number = 20;
   activeBookings: number = 0;
   availableNow: number = 20;
+
+  @ViewChild(BaseChartDirective) chart: any;
+
+  // --- UI State ---
+  isListVisible: boolean = false;
+  currentDateRange: number = 7;
+  todaysBookings: any[] = [];
+  buildings: string[] = ['SAC', 'NAC', 'WAC', 'EAC']; // [cite: 10, 19]
 
   private allSystemBookings: any[] = [];
   private roomService = inject(RoomService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
-  // Map for Dynamic UI Color-Coding
+
   private buildingColorMap: { [key: string]: string } = {
     'SAC': '#f5a81c', 'NAC': '#4a0000', 'WAC': '#326284', 'EAC': '#E68D76'
   };
-  // --- Chart Configurations ---
+
+  // --- Chart Setup ---
   public lineChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
-    datasets: [
-      {
-        data: [],
-        label: 'Booking Volume',
-        fill: true,
-        tension: 0.4,
-        borderColor: '#8b0000',
-        backgroundColor: 'rgba(152, 8, 8, 0.15)',
-        pointBackgroundColor: '#8b0000',
-        pointBorderColor: '#fff',
-      }
-    ]
-  };
-
-  public lineChartOptions: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: true, position: 'top' },
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: { beginAtZero: true, type: 'linear', ticks: { stepSize: 1 } }
-    }
+    datasets: [{
+      data: [],
+      label: 'Booking Volume',
+      fill: true,
+      tension: 0.4,
+      borderColor: '#8b0000',
+      backgroundColor: 'rgba(152, 8, 8, 0.15)',
+    }]
   };
 
   public barChartData: ChartConfiguration<'bar'>['data'] = {
@@ -75,46 +58,41 @@ export class DashboardComponent implements OnInit {
     datasets: []
   };
 
+  // Chart Options [cite: 23]
+  public lineChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+  };
+
   public barChartOptions: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
-    scales: {
-      x: { stacked: true, grid: { display: false } },
-      y: { stacked: true, beginAtZero: true, type: 'linear', ticks: { stepSize: 1 } }
-    }
+    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
   };
 
   constructor(public router: Router) {}
 
-ngOnInit(): void {
-this.roomService.bookings$.subscribe((allBookings: any[]) => {
-      if (allBookings && allBookings.length >= 0) {
+  ngOnInit(): void {
+    // Subscribe to the real-time booking stream 
+    this.roomService.bookings$.subscribe((allBookings: any[]) => {
+      if (allBookings) {
         this.allSystemBookings = allBookings;
         this.updateDashboardStats(allBookings);
         this.processDataByRange(this.currentDateRange);
-        // FIXED: Force Angular to recognize the new math values
-        this.cdr.detectChanges(); 
+        this.cdr.detectChanges(); // Force UI update for real-time tracking 
       }
     });
     this.roomService.loadAllBookings();
   }
 
-  getBookingStyle(roomName: string) {
-    const prefix = roomName?.split(' ')[0];
-    const bgColor = this.buildingColorMap[prefix] || '#e9e9e9';
-    return {
-      'border-left': `8px solid ${bgColor}`,
-      'background-color': '#ffffff',
-      'padding': '15px',
-      'border-radius': '8px',
-      'margin-bottom': '10px',
-      'box-shadow': '0 2px 4px rgba(0,0,0,0.05)'
-    };
-  }
-  // FIXED: Improved stat calculation to handle database nulls and date formats
+  /**
+   * F-1.3 & F-1.8: Calculate Occupancy and Prevent Conflicts [cite: 19, 20]
+   */
   updateDashboardStats(allBookings: any[]): void {
     const today = this.formatDate(new Date());
 
+    // Filter only bookings for the current system date 
     this.todaysBookings = allBookings.filter(b => {
       if (!b.booking_date) return false;
       const bDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
@@ -122,16 +100,29 @@ this.roomService.bookings$.subscribe((allBookings: any[]) => {
     });
 
     this.activeBookings = this.todaysBookings.length;
-    this.totalRooms = this.maxCapacity - this.activeBookings;
+    
+    // Real-time subtraction math
     this.availableNow = this.maxCapacity - this.activeBookings;
+    this.totalRooms = this.maxCapacity; 
+  }
+
+  /**
+   * F-1.8 Conflict Prevention Check (Use this before saving new bookings) 
+   */
+  checkConflict(roomName: string, date: string, period: string): boolean {
+    return this.allSystemBookings.some(b => 
+      b.room_name === roomName && 
+      b.booking_date.includes(date) && 
+      b.period === period
+    );
   }
 
   private formatDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 
   processDataByRange(days: number): void {
     this.currentDateRange = days;
@@ -162,19 +153,35 @@ this.roomService.bookings$.subscribe((allBookings: any[]) => {
     if (this.chart) this.chart.update();
   }
 
+  getBookingStyle(roomName: string) {
+    const prefix = roomName?.split(' ')[0];
+    const bgColor = this.buildingColorMap[prefix] || '#e9e9e9';
+    return { 'border-left': `8px solid ${bgColor}` };
+  }
+
   toggleBookingList(): void {
     this.isListVisible = !this.isListVisible;
   }
 
-  clearAllBookings(): void {
-    if(confirm('Are you sure you want to clear all data?')) {
-      this.roomService.updateBookings([]);
-      this.isListVisible = false;
-    }
+  // Add this to your dashboard.ts file
+clearAllBookings(): void {
+  if (confirm('Are you sure you want to clear all booking data for today? This action cannot be undone.')) {
+    // This calls your service to delete the data
+    this.roomService.clearBookings().subscribe({
+      next: () => {
+        alert('All bookings have been cleared.');
+        this.roomService.loadAllBookings(); // Refresh the numbers
+      },
+      error: (err) => {
+        console.error('Failed to clear bookings:', err);
+        alert('Could not clear bookings. Check your backend connection.');
+      }
+    });
   }
+}
 
   onSignOut(): void {
-    localStorage.removeItem('currentUser'); // FIXED: Ensure session is cleared
+    localStorage.removeItem('currentUser'); // [cite: 12]
     this.router.navigate(['/login']);
   }
 }

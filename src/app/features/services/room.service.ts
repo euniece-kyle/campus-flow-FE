@@ -33,6 +33,11 @@ loadAllBookings() {
     return user ? JSON.parse(user) : { firstName: 'Guest', lastName: '' };
   }
 
+  // Ensure this exists in room.service.ts
+clearBookings() {
+  return this.http.delete('http://localhost:3000/api/bookings/clear-today');
+}
+
   updateBookings(bookings: any[]) {
     this.bookingsSubject.next(bookings);
   }
