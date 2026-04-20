@@ -26,29 +26,27 @@
 
       <label>Period:</label>
       <div class="form-value dropdown-wrapper">
-        <select [(ngModel)]="data.period" class="native-look">
+        <select [(ngModel)]="data.period" name="period">
           <option value="" disabled selected>(None)</option>
-          <option *ngFor="let p of periods" [value]="p.label">{{ p.label }} ({{ p.time }})</option>
-        </select>
+          <option *ngFor="let p of periods" [value]="p.label">{{ p.label }}</option>
+          </select>
         <span class="arrow-icon">▼</span>
       </div>
 
       <label>Subject/Department</label>
-      <select [(ngModel)]="data.department" name="department">
+        <select [(ngModel)]="data.department" name="subject">
         <option value="" disabled selected>Select Subject</option>
         <option *ngFor="let s of subjects" [value]="s.name">{{ s.name }}</option>
-      </select>
+          </select>
         <span class="arrow-icon">▼</span>
       </div>
 
       <label>Booked By:</label>
       <div class="form-value dropdown-wrapper">
-        <select [(ngModel)]="selectedStaff" name="bookedBy" class="native-look">
+          <select [(ngModel)]="selectedStaff" name="bookedBy">
           <option value="" disabled selected>Select User</option>
-          <option *ngFor="let s of staff" [value]="s.username">
-            {{ s.username }}
-          </option>
-        </select>
+          <option *ngFor="let s of staff" [value]="s.username">{{ s.username }}</option>
+          </select>
         <span class="arrow-icon">▼</span>
       </div>
 
