@@ -11,31 +11,26 @@ export class RoomService {
   private apiUrl = 'http://localhost:3000/api/bookings';
 
   constructor(private http: HttpClient) {
-    // 1. First, load from localStorage for instant UI
-    const saved = localStorage.getItem('campus_bookings');
-    if (saved) {
-      try {
-        this.bookingsSubject.next(JSON.parse(saved));
-      } catch (e) {
-        console.error('Could not parse saved bookings', e);
-      }
-    }
-    // 2. Then, immediately fetch fresh data from the Database
     this.loadAllBookings();
   }
 
+  // FIXED: Force real-time fetch from MySQL only
   loadAllBookings() {
     this.http.get<any[]>(this.apiUrl).subscribe({
       next: (data) => {
         this.bookingsSubject.next(data);
-        localStorage.setItem('campus_bookings', JSON.stringify(data));
       },
       error: (err) => console.error('Failed to load bookings from API', err)
     });
   }
 
+  // FIXED: Helper to get the actual logged-in user for the Booking Modal
+  getCurrentUser() {
+    const user = localStorage.getItem('currentUser');
+    return user ? JSON.parse(user) : { firstName: 'Guest', lastName: '' };
+  }
+
   updateBookings(bookings: any[]) {
     this.bookingsSubject.next(bookings);
-    localStorage.setItem('campus_bookings', JSON.stringify(bookings));
   }
 }

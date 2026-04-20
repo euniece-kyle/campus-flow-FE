@@ -17,17 +17,16 @@ import { RoomService } from '../services/room.service';
 export class BookingComponent implements OnInit { 
   selectedBuilding: string = 'SAC Building';
   selectedDate: Date = new Date();
-  currentUserDisplayName: string = 'Precious Fillalan'; 
+  
+  // FIXED: [issue] Initialized as empty string to avoid "undefined" errors
+  currentUserDisplayName: string = ''; 
   
   isModalOpen: boolean = false;
   targetRoom: string = '';
   targetPeriod: string = '';
-
   isViewOpen: boolean = false;
   selectedBooking: any = null;
   savedBookings: any[] = [];
-  
-  // FIXED: Added variable for the cancellation popup
   showCancelConfirm: boolean = false;
 
   buildings: string[] = ['SAC Building', 'NAC Building', 'WAC Building', 'EAC Building'];
@@ -43,6 +42,10 @@ export class BookingComponent implements OnInit {
   constructor(public router: Router, private roomService: RoomService, private http: HttpClient) {}
 
   ngOnInit() {
+    // FIXED: [issue] Line 42 - Added optional chaining to handle potential null user
+    const user = this.roomService.getCurrentUser();
+    this.currentUserDisplayName = `${user?.firstName || 'Guest'} ${user?.lastName || ''}`;
+
     this.selectedDate.setHours(0,0,0,0);
     this.roomService.bookings$.subscribe(data => {
       this.savedBookings = data;
@@ -62,9 +65,8 @@ export class BookingComponent implements OnInit {
     });
   }
 
-  // FIXED: Missing onDateChange logic for the date input
   onDateChange(event: any) {
-    const val = event.target.value; // YYYY-MM-DD
+    const val = event.target.value;
     if (val) {
       const parts = val.split('-');
       this.selectedDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
@@ -72,7 +74,6 @@ export class BookingComponent implements OnInit {
     }
   }
 
-  // FIXED: Missing changeDate logic for Previous/Next buttons
   changeDate(days: number) {
     const newDate = new Date(this.selectedDate);
     newDate.setDate(newDate.getDate() + days);
@@ -80,28 +81,24 @@ export class BookingComponent implements OnInit {
     this.loadBookings();
   }
 
-  // FIXED: Missing selectBuilding logic
   selectBuilding(building: string) {
     this.selectedBuilding = building;
   }
 
-  // FIXED: Missing closeView for the booking details drawer
   closeView() {
     this.isViewOpen = false;
     this.selectedBooking = null;
     this.showCancelConfirm = false;
   }
 
-  // FIXED: Missing confirmCancel for deleting bookings
   confirmCancel() {
     if (this.selectedBooking && this.selectedBooking.id) {
       this.http.delete(`http://localhost:3000/api/bookings/${this.selectedBooking.id}`).subscribe({
         next: () => {
-          alert('Booking cancelled successfully.');
           this.closeView();
           this.loadBookings();
         },
-        error: () => alert('Failed to cancel booking.')
+        error: () => console.error('Error cancelling booking.')
       });
     }
   }
@@ -132,5 +129,11 @@ export class BookingComponent implements OnInit {
 
   handleNewBooking(data: any) { this.loadBookings(); this.isModalOpen = false; }
   closeModal() { this.isModalOpen = false; }
-  onSignOut() { this.router.navigate(['/login']); }
+  
+  onSignOut() { 
+    // FIXED: [issue] Line 118 - Consistent session clearing
+    localStorage.removeItem('currentUser'); 
+    localStorage.removeItem('campus_bookings');
+    this.router.navigate(['/login']); 
+  }
 }
