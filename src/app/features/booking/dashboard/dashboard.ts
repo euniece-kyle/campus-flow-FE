@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RoomService } from '../../services/room.service';
 import { HttpClient } from '@angular/common/http';
 import { BaseChartDirective } from 'ng2-charts';
-import { Chart, registerables } from 'chart.js';
+import { Chart, registerables, ChartConfiguration, ChartOptions } from 'chart.js';
 
 Chart.register(...registerables);
 
@@ -15,7 +15,6 @@ Chart.register(...registerables);
   styleUrls: ['./dashboard.scss']
 })
 export class DashboardComponent implements OnInit {
-  // Matched exactly to your dashboard.html property names
   stats = { 
     totalBookings: 0, 
     totalSubjects: 0,
@@ -23,6 +22,27 @@ export class DashboardComponent implements OnInit {
   };
   
   @ViewChild(BaseChartDirective) chart: any;
+
+  public lineChartData: ChartConfiguration<'line'>['data'] = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        label: 'Booking Volume',
+        fill: true,
+        tension: 0.5,
+        borderColor: '#a80000',
+        backgroundColor: 'rgba(168, 0, 0, 0.1)'
+      }
+    ]
+  };
+
+  public lineChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    scales: {
+      y: { beginAtZero: true, ticks: { stepSize: 1 } }
+    }
+  };
 
   isListVisible: boolean = false;
   currentDateRange: number = 7;
@@ -33,7 +53,7 @@ export class DashboardComponent implements OnInit {
   private http = inject(HttpClient);
 
   ngOnInit(): void {
-    // Fetch statistics from your Hono backend
+    // Connects to your Hono backend statsController
     this.http.get<any>('http://localhost:3000/api/stats').subscribe({
       next: (data) => { 
         this.stats.totalBookings = data.totalBookings || 0;
@@ -50,7 +70,7 @@ export class DashboardComponent implements OnInit {
     this.roomService.loadAllBookings();
   }
 
-  // FIXED: Renamed to match the (click) event in dashboard.html line 33
+  // Matches the (click) event in your dashboard.html line 33
   toggleBookingList() {
     this.isListVisible = !this.isListVisible;
   }

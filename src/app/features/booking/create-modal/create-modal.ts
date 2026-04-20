@@ -25,7 +25,7 @@ export class CreateModal implements OnInit {
   selectedStaff: string = ''; 
 
   // Re-added periods array to fix HTML template loop error
-  periods = [
+periods = [
     { label: 'Period 1', time: '9:00am - 10:30am' },
     { label: 'Period 2', time: '10:30am - 12:00nn' },
     { label: 'LUNCH',    time: '12:00nn - 1:00pm' },
@@ -34,22 +34,11 @@ export class CreateModal implements OnInit {
     { label: 'Period 6', time: '3:30pm - 5:00pm' }
   ];
 
-  data: any = {
-    period: '',
-    department: '', 
-    untilDate: 'Ending of session',
-    showDatePicker: false,
-    startDate: '',
-    customUntilDate: ''
-  };
+data: any = { period: '', department: '' };
 
   constructor(private http: HttpClient) {}
 
-  ngOnInit() {
-    if (this.period) {
-      this.data.period = this.period;
-    }
-
+ngOnInit() {
     this.http.get<any[]>('http://localhost:3000/api/subjects').subscribe({
       next: (res) => this.subjects = res,
       error: (err) => console.error('Subject Load Error', err)
@@ -72,7 +61,7 @@ export class CreateModal implements OnInit {
     this.data.showDatePicker = (this.data.untilDate === 'Pick Date');
   }
 
-  onSubmit() {
+onSubmit() {
     const bookingPayload = {
       room_name: this.roomName,
       booking_date: this.selectedDate,
@@ -80,7 +69,6 @@ export class CreateModal implements OnInit {
       subject: this.data.department,
       booked_by: this.selectedStaff,
       booking_type: this.selectedType,
-      until_date: this.selectedType === 'Recurring' ? this.data.untilDate : null,
       status: 'Confirmed'
     };
 
