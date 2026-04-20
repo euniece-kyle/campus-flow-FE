@@ -28,6 +28,7 @@ export class DashboardComponent implements OnInit {
   // --- Stats Logic ---
   buildings: string[] = ['SAC', 'NAC', 'WAC', 'EAC'];
   roomsPerBuilding: number = 5;
+  maxCapacity: number = 20;
   totalRooms: number = 20;
   activeBookings: number = 0;
   availableNow: number = 20;
@@ -85,11 +86,6 @@ export class DashboardComponent implements OnInit {
   constructor(public router: Router) {}
 
 ngOnInit(): void {
-    this.http.get<any>('http://localhost:3000/api/stats').subscribe({
-      next: (data) => { this.stats = data; },
-      error: (err) => console.error('Stats fetch failed', err)
-    });
-
     this.totalRooms = this.buildings.length * this.roomsPerBuilding;
 
     this.roomService.bookings$.subscribe((allBookings: any[]) => {
@@ -117,6 +113,7 @@ ngOnInit(): void {
   // FIXED: Improved stat calculation to handle database nulls and date formats
   updateDashboardStats(allBookings: any[]): void {
     const today = this.formatDate(new Date());
+
     this.todaysBookings = allBookings.filter(b => {
       if (!b.booking_date) return false;
       const bDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
@@ -124,7 +121,8 @@ ngOnInit(): void {
     });
 
     this.activeBookings = this.todaysBookings.length;
-    this.availableNow = this.totalRooms - this.activeBookings;
+    this.totalRooms = this.maxCapacity - this.activeBookings;
+    this.availableNow = this.maxCapacity - this.activeBookings;
   }
 
   private formatDate(date: Date): string {
