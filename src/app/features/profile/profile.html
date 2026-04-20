@@ -33,8 +33,7 @@
     </div>
   </aside>
 
-  <main class="main">
-    <h1 class="profile-title">Profile</h1>
+  <main class="main" *ngIf="user.email"> <h1 class="profile-title">Profile</h1>
 
     <div class="profile-card info-card">
       <div class="card-header">
@@ -48,7 +47,7 @@
       </div>
 
       <div class="card-content">
-        <div class="avatar-circle">{{ user.initials }}</div>
+        <div class="avatar-circle">{{ user.initials || '??' }}</div>
         
         <div class="form-container">
           <div class="input-group">
@@ -61,8 +60,7 @@
           </div>
           <div class="input-group full-width">
             <label>Email Address</label>
-            <input type="email" [(ngModel)]="user.email" disabled> 
-          </div>
+            <input type="email" [value]="user.email" disabled> </div>
         </div>
       </div>
       

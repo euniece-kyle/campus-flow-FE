@@ -44,47 +44,61 @@ export class CreateModal implements OnInit {
 
   constructor(private http: HttpClient) {}
 
-  ngOnInit() {
-    // Load subjects from MySQL
-    this.http.get<any[]>('http://localhost:3000/api/subjects').subscribe({
-      next: (res) => this.subjects = res,
-      error: (err) => console.error('Subject Load Error', err)
-    });
+ngOnInit() {
+  // 1. Load subjects from MySQL
+  this.http.get<any[]>('http://localhost:3000/api/subjects').subscribe({
+    next: (res) => this.subjects = res,
+    error: (err) => console.error('Subject Load Error', err)
+  });
 
-    // Load users/staff from MySQL to fix the dropdown
-    this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
-      next: (res) => {
-        this.staff = res;
-        this.selectedStaff = this.bookedBy || "Precious Fillalan";
-      },
-      error: (err) => console.error('User Load Error', err)
-    });
-  }
+  // 2. Load staff AND auto-select current user
+  this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
+    next: (res) => {
+      this.staff = res;
+      
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        const loggedInUser = JSON.parse(savedUser);
+        // Combine names to match the "Booked By" format
+        this.selectedStaff = `${loggedInUser.firstName} ${loggedInUser.lastName}`;
+      } else {
+        this.selectedStaff = "Precious Fillalan"; // Fallback
+      }
+    },
+    error: (err) => console.error('User Load Error', err)
+  });
+}
 
   // FIX FOR LINE 65: Adding the missing function
   onUntilChange() {
     this.data.showDatePicker = (this.data.untilDate === 'Pick Date');
   }
 
-  onSubmit() {
-    const bookingPayload = {
-      room_name: this.roomName,
-      booking_date: this.selectedDate,
-      period: this.data.period,
-      subject: this.data.department,
-      booked_by: this.selectedStaff,
-      booking_type: this.selectedType,
-      status: 'Confirmed'
-    };
+onSubmit() {
+  // Construct the payload to match your MySQL table columns
+  const bookingPayload = {
+    room_name: this.roomName,
+    booking_date: this.selectedDate, // Ensure this is YYYY-MM-DD
+    period: this.data.period,
+    subject: this.data.department,
+    booked_by: this.selectedStaff,
+    booking_type: this.selectedType,
+    until_date: this.selectedType === 'Recurring' ? this.data.untilDate : null,
+    status: 'Confirmed'
+  };
 
-    this.http.post('http://localhost:3000/api/bookings', bookingPayload).subscribe({
-      next: (response: any) => {
-        this.create.emit(response);
-        this.close.emit();
-      },
-      error: (err) => alert('Save failed!')
-    });
-  }
+  this.http.post('http://localhost:3000/api/bookings', bookingPayload).subscribe({
+    next: (res) => {
+      alert('Booking saved successfully!');
+      this.close.emit(); // Close modal
+      window.location.reload(); // Refresh to show on grid
+    },
+    error: (err) => {
+      console.error('Booking failed', err);
+      alert('Failed to save booking. Check console for details.');
+    }
+  });
+}
 
   closeModal() {
     this.close.emit();
