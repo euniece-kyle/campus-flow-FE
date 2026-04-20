@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { HttpClient, HttpClientModule } from '@angular/common/http'; // Added back to fix errors
+import { HttpClient, HttpClientModule } from '@angular/common/http'; 
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule], // Added HttpClientModule
+  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule],
   templateUrl: './profile.html',
   styleUrls: ['./profile.scss']
 })
@@ -25,14 +25,18 @@ export class ProfileComponent implements OnInit {
   userBackup: any;
   isEditing: boolean = false;
   isChangingPassword: boolean = false;
+  
+  // FIXED: Added variables for OTP presentation logic
+  otpSent: boolean = false;
+  isVerified: boolean = false;
+  otpInput: string = '';
 
   passwordData = { current: '', new: '', confirm: '' };
   showPassword = { current: false, new: false, confirm: false };
 
-  // This matches your backend apiUrl
   private apiUrl = 'http://localhost:3000/api/users';
 
-  constructor(public router: Router, private http: HttpClient) {} // Injected HttpClient
+  constructor(public router: Router, private http: HttpClient) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('currentUser');
@@ -45,15 +49,24 @@ export class ProfileComponent implements OnInit {
     }
   }
 
+  // FIXED: Security requirement - Show ALL ASTERISKS (**)
   generatePasswordHint() {
-    const pass = this.user.password || '';
-    if (pass.length > 2) {
-      const first = pass.charAt(0);
-      const last = pass.charAt(pass.length - 1);
-      const middle = '*'.repeat(pass.length - 2);
-      this.maskedPasswordHint = `${first}${middle}${last}`;
+    this.maskedPasswordHint = '********';
+  }
+
+  // FIXED: OTP functionality for presentation
+  sendOTP() {
+    this.otpSent = true;
+    alert(`A security OTP code has been sent to ${this.user.email}`);
+  }
+
+  verifyOTP() {
+    if (this.otpInput === '1234') { // Presentation dummy code
+      this.isVerified = true;
+      this.isChangingPassword = true;
+      alert('Identity Verified Successfully.');
     } else {
-      this.maskedPasswordHint = '********';
+      alert('Invalid OTP code. Please try again.');
     }
   }
 
@@ -65,16 +78,13 @@ export class ProfileComponent implements OnInit {
 
   toggleEdit() {
     if (!this.isEditing) {
-      // Create a deep copy so we can cancel changes
       this.userBackup = JSON.parse(JSON.stringify(this.user));
       this.isEditing = true;
     }
   }
 
-saveUserData() {
+  saveUserData() {
     this.updateInitials();
-    
-    // THE FIX: Added (any) to updatedUser to solve the TS2696 error in your terminal
     this.http.patch(`${this.apiUrl}/${this.user.id}`, this.user).subscribe({
       next: (updatedUser: any) => {
         this.user = updatedUser;
@@ -84,7 +94,6 @@ saveUserData() {
       },
       error: (err) => {
         console.error('Update failed', err);
-        // Fallback: update local storage anyway so the UI stays in sync
         localStorage.setItem('currentUser', JSON.stringify(this.user));
         this.isEditing = false;
         alert('Profile updated locally!');
@@ -94,7 +103,6 @@ saveUserData() {
 
   cancelEdit() {
     if (this.userBackup) {
-      // Restore from backup
       this.user = JSON.parse(JSON.stringify(this.userBackup));
     }
     this.isEditing = false;
@@ -125,7 +133,6 @@ saveUserData() {
       return;
     }
 
-// Prepare password update payload
     const payload = { password: this.passwordData.new };
     
     this.http.patch(`${this.apiUrl}/${this.user.id}/password`, payload).subscribe({
@@ -142,6 +149,9 @@ saveUserData() {
 
   resetPasswordForm() {
     this.isChangingPassword = false;
+    this.otpSent = false;
+    this.isVerified = false;
+    this.otpInput = '';
     this.passwordData = { current: '', new: '', confirm: '' };
     this.showPassword = { current: false, new: false, confirm: false };
   }

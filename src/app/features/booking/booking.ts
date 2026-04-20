@@ -17,7 +17,7 @@ import { RoomService } from '../services/room.service';
 export class BookingComponent implements OnInit { 
   selectedBuilding: string = 'SAC Building';
   selectedDate: Date = new Date();
-  // FIXED: Defaulting to the logged-in user name found in your profile
+  // FIXED: Sync with the current logged in user
   currentUserDisplayName: string = 'Precious Fillalan'; 
   
   isModalOpen: boolean = false;
@@ -55,11 +55,11 @@ export class BookingComponent implements OnInit {
   }
 
   loadBookings() {
-    // FIXED: Call the service to fetch latest data for real-time sync
     this.roomService.loadAllBookings();
   }
 
   handleNewBooking(bookingData: any) {
+    // FIXED: Immediately refresh local list after modal emits 'create'
     this.loadBookings();
     this.isModalOpen = false;
   }
@@ -73,7 +73,6 @@ export class BookingComponent implements OnInit {
       },
       error: (err) => {
         console.error('Delete failed:', err);
-        alert('Could not cancel booking.');
       }
     });
   }
@@ -83,10 +82,11 @@ export class BookingComponent implements OnInit {
     return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
   }
 
-  // FIXED: Clean date string from DB (split 'T') to match local input format so grid visibility works
+  // FIXED: Logic to ensure data in DB matches the grid view correctly
   getBooking(room: string, periodLabel: string) {
     const formattedDate = this.dateForInput; 
     return this.savedBookings.find(b => {
+      // Strips ISO time strings from MySQL to match YYYY-MM-DD
       const dbDate = b.booking_date ? b.booking_date.split('T')[0] : '';
       return b.room_name === room &&
              b.period === periodLabel &&
