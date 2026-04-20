@@ -13,24 +13,21 @@ import { HttpClient } from '@angular/common/http';
 export class CreateModal implements OnInit {
   @Input() roomName: string = '';
   @Input() selectedDate: string = '';
+  @Input() targetPeriod: string = ''; 
   @Input() bookedBy: string = '';
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
-
-  selectedType: 'One-Time' | 'Recurring' = 'One-Time';
-  subjects: any[] = [];
   
-  // FIX FOR LINE 49: Adding the staff array
   staff: any[] = []; 
+  subjects: any[] = [];
   selectedStaff: string = ''; 
+  selectedType: 'One-Time' | 'Recurring' = 'One-Time';
 
   data: any = {
     period: '',
     department: '', 
     untilDate: 'Ending of session',
-    showDatePicker: false,
-    startDate: '',
-    customUntilDate: ''
+    showDatePicker: false
   };
 
   periods = [
@@ -45,6 +42,11 @@ export class CreateModal implements OnInit {
   constructor(private http: HttpClient) {}
 
 ngOnInit() {
+  if (this.targetPeriod) {
+      this.data.period = this.targetPeriod;
+    }
+
+  this.selectedStaff = this.bookedBy;
   // 1. Load subjects from MySQL
   this.http.get<any[]>('http://localhost:3000/api/subjects').subscribe({
     next: (res) => this.subjects = res,
@@ -69,11 +71,6 @@ ngOnInit() {
   });
 }
 
-  // FIX FOR LINE 65: Adding the missing function
-  onUntilChange() {
-    this.data.showDatePicker = (this.data.untilDate === 'Pick Date');
-  }
-
 onSubmit() {
   // Construct the payload to match your MySQL table columns
   const bookingPayload = {
@@ -83,13 +80,13 @@ onSubmit() {
     subject: this.data.department,
     booked_by: this.selectedStaff,
     booking_type: this.selectedType,
-    until_date: this.selectedType === 'Recurring' ? this.data.untilDate : null,
     status: 'Confirmed'
   };
 
   this.http.post('http://localhost:3000/api/bookings', bookingPayload).subscribe({
     next: (res) => {
       alert('Booking saved successfully!');
+      this.create.emit(res);
       this.close.emit(); // Close modal
       window.location.reload(); // Refresh to show on grid
     },
@@ -100,6 +97,7 @@ onSubmit() {
   });
 }
 
+  onUntilChange() { this.data.showDatePicker = (this.data.untilDate === 'Pick Date'); }
   closeModal() {
     this.close.emit();
   }

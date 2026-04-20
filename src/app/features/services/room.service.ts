@@ -8,17 +8,20 @@ import { HttpClient } from '@angular/common/http';
 export class RoomService {
   private bookingsSubject = new BehaviorSubject<any[]>([]);
   bookings$ = this.bookingsSubject.asObservable();
-  private apiUrl = 'http://localhost:3000/api/bookings';
 
   constructor(private http: HttpClient) {
     this.loadAllBookings();
   }
 
-  // FIXED: Force real-time fetch from MySQL only
-  loadAllBookings() {
+loadAllBookings() {
     this.http.get<any[]>('http://localhost:3000/api/bookings').subscribe({
       next: (data) => {
-        const sortedData = data.sort((a, b) => new Date(a.booking_date).getTime() - new Date(b.booking_date).getTime());
+        // FIXED: Using a string-safe comparison to prevent timezone shifts
+        const sortedData = data.sort((a, b) => {
+          const dateA = a.booking_date.split('T')[0];
+          const dateB = b.booking_date.split('T')[0];
+          return dateA.localeCompare(dateB);
+        });
         this.bookingsSubject.next(sortedData);
       },
       error: (err) => console.error('Failed to load bookings from API', err)

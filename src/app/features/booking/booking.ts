@@ -15,12 +15,11 @@ import { RoomService } from '../services/room.service';
   providers: [DatePipe]
 })
 export class BookingComponent implements OnInit { 
-  bookedRooms: any[] = [];
   selectedBuilding: string = 'SAC Building';
   selectedDate: Date = new Date();
   
-  currentUserDisplayName: string = ''; 
-  
+currentUserDisplayName: string = '';
+
   isModalOpen: boolean = false;
   targetRoom: string = '';
   targetPeriod: string = '';
@@ -42,13 +41,11 @@ export class BookingComponent implements OnInit {
   constructor(public router: Router, private roomService: RoomService, private http: HttpClient) {}
 
   ngOnInit() {
-    // FIXED: [issue] Line 42 - Added optional chaining to handle potential null user
     const user = this.roomService.getCurrentUser();
     this.currentUserDisplayName = `${user?.firstName || 'Guest'} ${user?.lastName || ''}`;
 
       this.roomService.bookings$.subscribe(data => {
       this.savedBookings = data;
-      this.bookedRooms = data; 
     });
     this.loadBookings();
   }
@@ -65,12 +62,7 @@ getBooking(room: string, periodLabel: string) {
   const formattedDate = this.dateForInput; // This is YYYY-MM-DD
   return this.savedBookings.find(b => {
     if (!b.booking_date) return false;
-    
-    // This handles both "2026-04-20T..." and "2026-04-20"
-    const dbDate = b.booking_date.includes('T') 
-      ? b.booking_date.split('T')[0] 
-      : b.booking_date;
-      
+    const dbDate = b.booking_date.split('T')[0];
     return b.room_name === room && b.period === periodLabel && dbDate === formattedDate;
   });
 }
@@ -111,10 +103,6 @@ getBuildingStyle(roomName: string) {
     this.loadBookings();
   }
 
-  selectBuilding(building: string) {
-    this.selectedBuilding = building;
-  }
-
   closeView() {
     this.isViewOpen = false;
     this.selectedBooking = null;
@@ -145,11 +133,6 @@ getBuildingStyle(roomName: string) {
     }
   }
 
-  get rooms(): string[] {
-    const prefix = this.selectedBuilding.split(' ')[0];
-    return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
-  }
-
   get dateForInput(): string {
     const year = this.selectedDate.getFullYear();
     const month = String(this.selectedDate.getMonth() + 1).padStart(2, '0');
@@ -157,16 +140,17 @@ getBuildingStyle(roomName: string) {
     return `${year}-${month}-${day}`;
   }
 
-  handleNewBooking(data: any) { this.loadBookings(); this.isModalOpen = false; }
-  closeModal() { this.isModalOpen = false; }
-  
-  onBookingCreated() { this.refreshBookings();
+    get rooms(): string[] {
+    const prefix = this.selectedBuilding.split(' ')[0];
+    return [prefix + ' 201', prefix + ' 202', prefix + ' 203', prefix + ' 204', prefix + ' 205'];
   }
 
-  onSignOut() { 
-    // FIXED: [issue] Line 118 - Consistent session clearing
-    localStorage.removeItem('currentUser'); 
-    localStorage.removeItem('campus_bookings');
+handleNewBooking(data: any) { this.loadBookings(); this.isModalOpen = false; }
+  closeModal() { this.isModalOpen = false; }
+  selectBuilding(b: string) { this.selectedBuilding = b; }
+
+onSignOut() { 
+    localStorage.clear();
     this.router.navigate(['/login']); 
   }
 }

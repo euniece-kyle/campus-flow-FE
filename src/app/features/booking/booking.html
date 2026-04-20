@@ -147,7 +147,7 @@
   *ngIf="isModalOpen" 
   [roomName]="targetRoom"
   [selectedDate]="dateForInput"
-  [bookedBy]="currentUserDisplayName" 
+  [targetPeriod]="targetPeriod" 
   (close)="closeModal()"
   (create)="handleNewBooking($event)">
 </app-create-modal>
