@@ -14,7 +14,7 @@ export class CreateModal implements OnInit {
   @Input() roomName: string = '';
   @Input() selectedDate: string = '';
   @Input() targetPeriod: string = '';
-  @Input() bookedBy: string = ''; // FIXED: Added to resolve Line 152 error in booking.html
+  @Input() bookedBy: string = ''; 
   
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
@@ -23,6 +23,15 @@ export class CreateModal implements OnInit {
   staff: any[] = []; 
   selectedStaff: string = ''; 
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
+
+  // FIXED: Added periods array so the template can loop through options
+  periods = [
+    { label: 'Period 1' },
+    { label: 'Period 2' },
+    { label: 'Period 4' },
+    { label: 'Period 5' },
+    { label: 'Period 6' }
+  ];
 
   data: any = {
     period: '',
@@ -38,7 +47,6 @@ export class CreateModal implements OnInit {
       this.data.period = this.targetPeriod;
     }
     
-    // FIXED: Default the selected staff to the user display name passed from parent
     this.selectedStaff = this.bookedBy;
 
     this.http.get<any[]>('http://localhost:3000/api/subjects').subscribe(res => this.subjects = res);
@@ -46,7 +54,6 @@ export class CreateModal implements OnInit {
   }
 
   onSubmit() {
-    // FIXED: Payload construction ensures booking_date is sent as a clean string
     const bookingPayload = {
       room_name: this.roomName,
       booking_date: this.selectedDate,

@@ -18,7 +18,7 @@ export class BookingComponent implements OnInit {
   selectedBuilding: string = 'SAC Building';
   selectedDate: Date = new Date();
   
-  // FIXED: Declared correctly for Line 152 in HTML
+  // FIXED: Declared correctly for template binding
   currentUserDisplayName: string = ''; 
   
   isModalOpen: boolean = false;
@@ -42,7 +42,6 @@ export class BookingComponent implements OnInit {
   constructor(public router: Router, private roomService: RoomService, private http: HttpClient) {}
 
   ngOnInit() {
-    // FIXED: Correctly fetching the user display name for modal binding
     const user = this.roomService.getCurrentUser();
     this.currentUserDisplayName = `${user?.firstName || 'Guest'} ${user?.lastName || ''}`;
 
@@ -56,15 +55,11 @@ export class BookingComponent implements OnInit {
     this.roomService.loadAllBookings();
   }
 
-  // FIXED: Standardized date comparison to prevent timezone shifts (April 20 stays April 20)
   getBooking(room: string, periodLabel: string) {
     const formattedDate = this.dateForInput; 
     return this.savedBookings.find(b => {
       if (!b.booking_date) return false;
-      
-      // FIXED: Use split('T') to extract the YYYY-MM-DD part only, ignoring the timestamp
       const dbDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
-      
       return b.room_name === room && b.period === periodLabel && dbDate === formattedDate;
     });
   }
@@ -88,6 +83,32 @@ export class BookingComponent implements OnInit {
       this.targetPeriod = periodLabel;
       this.isModalOpen = true; 
     }
+  }
+
+  // FIXED: Re-added missing closeView method for the drawer
+  closeView() {
+    this.isViewOpen = false;
+    this.selectedBooking = null;
+    this.showCancelConfirm = false;
+  }
+
+  // FIXED: Re-added missing confirmCancel method for deleting bookings
+  confirmCancel() {
+    if (this.selectedBooking && this.selectedBooking.id) {
+      this.http.delete(`http://localhost:3000/api/bookings/${this.selectedBooking.id}`).subscribe({
+        next: () => {
+          this.loadBookings();
+          this.closeView();
+        },
+        error: (err) => console.error('Delete failed', err)
+      });
+    }
+  }
+
+  // FIXED: Re-added missing onSignOut method for the sidebar
+  onSignOut() {
+    localStorage.removeItem('currentUser');
+    this.router.navigate(['/login']);
   }
 
   get dateForInput(): string {

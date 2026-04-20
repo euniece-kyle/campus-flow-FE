@@ -307,7 +307,7 @@ $text-maroon: #5D1A1A;
   font-size: 0.9rem;
   
   &:hover {
-    background-color: darken(#f39c12, 5%);
+    background-color: color-mix(in srgb, #f39c12, black 5%);
   }
 
   &.large-btn {
