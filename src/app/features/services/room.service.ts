@@ -6,8 +6,12 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root'
 })
 export class RoomService {
-  private bookingsSubject = new BehaviorSubject<any[]>([]);
-  bookings$ = this.bookingsSubject.asObservable();
+private bookingsSubject = new BehaviorSubject<any[]>([]);
+public bookings$ = this.bookingsSubject.asObservable();
+
+get allBookingsValue() {
+  return this.bookingsSubject.value;
+}
 
   constructor(private http: HttpClient) {
     this.loadAllBookings();

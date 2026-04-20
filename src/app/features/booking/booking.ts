@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CreateModal } from './create-modal/create-modal';
 import { RoomService } from '../services/room.service';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-booking',
@@ -15,6 +16,15 @@ import { RoomService } from '../services/room.service';
   providers: [DatePipe]
 })
 export class BookingComponent implements OnInit { 
+
+  bookingForm = new FormGroup({
+    room: new FormControl('', Validators.required),
+    date: new FormControl('', Validators.required),
+    period: new FormControl('', Validators.required),
+    subject: new FormControl('', Validators.required),
+    faculty: new FormControl('')
+  });
+
   selectedBuilding: string = 'SAC Building';
   selectedDate: Date = new Date();
   bookedRooms: any[] = [];
@@ -49,6 +59,44 @@ export class BookingComponent implements OnInit {
     });
     this.loadBookings();
   }
+
+saveBooking() {
+  const formValue = this.bookingForm.value;
+
+  if (!formValue.date) {
+    alert('Please select a valid date.');
+    return;
+  }
+  
+  const selectedDate = new Date(formValue.date).toISOString().split('T')[0];
+  const selectedRoom = formValue.room;
+  const selectedPeriod = formValue.period;
+
+  // 2. RUN THE STRICT CHECK
+  const isOccupied = this.roomService.allBookingsValue.some(b => {
+    // Clean the database date for comparison
+    const dbDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
+    
+    return dbDate === selectedDate && 
+           b.room_name === selectedRoom && 
+           b.period === selectedPeriod;
+  });
+
+  if (isOccupied) {
+    // F-1.8: Block the booking and alert the user
+    alert(`CONFLICT: ${selectedRoom} is already booked for Period ${selectedPeriod} on ${selectedDate}.`);
+    return; // This stops the code from reaching the http.post below
+  }
+
+  // 3. ONLY RUN THIS IF NO CONFLICT WAS FOUND
+  this.http.post('http://localhost:3000/api/bookings', formValue).subscribe({
+    next: () => {
+      alert('Room booked successfully!');
+this.roomService.loadAllBookings();
+    },
+    error: (err) => alert('Server error: Could not save booking.')
+  });
+}
 
 refreshBookings() {
     this.roomService.loadAllBookings();
