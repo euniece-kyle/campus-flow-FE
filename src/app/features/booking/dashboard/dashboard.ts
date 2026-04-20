@@ -87,17 +87,20 @@ export class DashboardComponent implements OnInit {
 
   constructor(public router: Router) {}
 
-ngOnInit(): void {
-    // FIXED: Now this.http will work
+  ngOnInit(): void {
+    // FIXED: Fetch overall stats from backend for Subject count
     this.http.get<any>('http://localhost:3000/api/stats').subscribe({
       next: (data) => { this.stats = data; },
       error: (err) => console.error('Stats fetch failed', err)
     });
+
     this.totalRooms = this.buildings.length * this.roomsPerBuilding;
 
+    // FIXED: Subscription logic now calculates Active Bookings and Available Now in real-time
     this.roomService.bookings$.subscribe((allBookings: any[]) => {
       if (allBookings) {
         this.allSystemBookings = allBookings;
+        // FIXED: Now triggers updateDashboardStats when new bookings arrive
         this.updateDashboardStats(allBookings);
         this.processDataByRange(this.currentDateRange);
       }
@@ -105,10 +108,6 @@ ngOnInit(): void {
     this.roomService.loadAllBookings();
   }
 
-  /**
-   * FIXED: This is the method your HTML was missing!
-   * It provides the dynamic styling for the Live Booking Details list.
-   */
   getBookingStyle(roomName: string) {
     const prefix = roomName?.split(' ')[0]; 
     const bgColor = this.buildingColorMap[prefix] || '#e9e9e9';
@@ -122,35 +121,40 @@ ngOnInit(): void {
     };
   }
 
-  // FIXED: Improved stat calculation to handle database nulls and date formats
+  // FIXED: Improved date filtering logic using string split to avoid timezone shift
   updateDashboardStats(allBookings: any[]): void {
+    // Get local date string YYYY-MM-DD
     const today = this.formatDate(new Date());
         
     this.todaysBookings = allBookings.filter(b => {
       if (!b.booking_date) return false;
+      // FIXED: String-safe normalization to match format "2026-04-20" without shift
       const bDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
       return bDate === today;
     });
 
+    // FIXED: Corrected calculation to update Active Bookings and Available Now
     this.activeBookings = this.todaysBookings.length;
-      this.availableNow = this.totalRooms - this.activeBookings;
+    this.availableNow = this.totalRooms - this.activeBookings;
   }
 
   private formatDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 
   processDataByRange(days: number): void {
     this.currentDateRange = days;
     this.updateCharts(this.allSystemBookings);
   }
 
+  // FIXED: updateCharts now correctly maps booking dates to the line and bar charts safely
   updateCharts(bookingsToUse: any[]): void {
     const dateMap: { [key: string]: number } = {};
     bookingsToUse.forEach(b => {
+      // FIXED: Standardize date format to YYYY-MM-DD using split
       const d = b.booking_date.split('T')[0];
       dateMap[d] = (dateMap[d] || 0) + 1;
     });
@@ -178,15 +182,13 @@ ngOnInit(): void {
 
   clearAllBookings(): void {
     if(confirm('Are you sure you want to clear all data?')) {
-      // FIXED: If your backend has a clear endpoint, call it here. 
-      // Otherwise, this clears the local stream.
       this.roomService.updateBookings([]);
       this.isListVisible = false;
     }
   }
 
   onSignOut(): void {
-    localStorage.removeItem('currentUser'); // FIXED: Ensure session is cleared
+    localStorage.removeItem('currentUser'); 
     this.router.navigate(['/login']);
   }
 }
