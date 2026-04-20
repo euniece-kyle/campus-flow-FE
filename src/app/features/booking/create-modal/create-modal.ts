@@ -78,7 +78,7 @@ onSubmit() {
   // Construct the payload to match your MySQL table columns
   const bookingPayload = {
     room_name: this.roomName,
-    booking_date: this.selectedDate, // Ensure this is YYYY-MM-DD
+    booking_date: this.selectedDate,
     period: this.data.period,
     subject: this.data.department,
     booked_by: this.selectedStaff,
@@ -90,6 +90,7 @@ onSubmit() {
   this.http.post('http://localhost:3000/api/bookings', bookingPayload).subscribe({
     next: (res) => {
       alert('Booking saved successfully!');
+      this.create.emit(res);
       this.close.emit(); // Close modal
       window.location.reload(); // Refresh to show on grid
     },
