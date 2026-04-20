@@ -13,14 +13,15 @@ import { HttpClient } from '@angular/common/http';
 export class CreateModal implements OnInit {
   @Input() roomName: string = '';
   @Input() selectedDate: string = '';
+  // FIXED: [error] Added missing Input to fix booking.html Line 68 error
+  @Input() period: string = ''; 
   @Input() bookedBy: string = '';
+  
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<any>();
 
   selectedType: 'One-Time' | 'Recurring' = 'One-Time';
   subjects: any[] = [];
-  
-  // FIX FOR LINE 49: Adding the staff array
   staff: any[] = []; 
   selectedStaff: string = ''; 
 
@@ -33,74 +34,60 @@ export class CreateModal implements OnInit {
     customUntilDate: ''
   };
 
-  periods = [
-    { label: 'Period 1', time: '9:00am - 10:30am' },
-    { label: 'Period 2', time: '10:30am - 12:00nn' },
-    { label: 'LUNCH',    time: '12:00nn - 1:00pm' },
-    { label: 'Period 4', time: '1:00pm - 2:00pm' },
-    { label: 'Period 5', time: '2:30pm - 3:30pm' },
-    { label: 'Period 6', time: '3:30pm - 5:00pm' }
-  ];
-
   constructor(private http: HttpClient) {}
 
-ngOnInit() {
-  // 1. Load subjects from MySQL
-  this.http.get<any[]>('http://localhost:3000/api/subjects').subscribe({
-    next: (res) => this.subjects = res,
-    error: (err) => console.error('Subject Load Error', err)
-  });
+  ngOnInit() {
+    // FIXED: [logic] If a period was passed in from the grid, auto-select it
+    if (this.period) {
+      this.data.period = this.period;
+    }
 
-  // 2. Load staff AND auto-select current user
-  this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
-    next: (res) => {
-      this.staff = res;
-      
-      const savedUser = localStorage.getItem('currentUser');
-      if (savedUser) {
-        const loggedInUser = JSON.parse(savedUser);
-        // Combine names to match the "Booked By" format
-        this.selectedStaff = `${loggedInUser.firstName} ${loggedInUser.lastName}`;
-      } else {
-        this.selectedStaff = "Precious Fillalan"; // Fallback
-      }
-    },
-    error: (err) => console.error('User Load Error', err)
-  });
-}
+    this.http.get<any[]>('http://localhost:3000/api/subjects').subscribe({
+      next: (res) => this.subjects = res,
+      error: (err) => console.error('Subject Load Error', err)
+    });
 
-  // FIX FOR LINE 65: Adding the missing function
+    this.http.get<any[]>('http://localhost:3000/api/users').subscribe({
+      next: (res) => {
+        this.staff = res;
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+          const loggedInUser = JSON.parse(savedUser);
+          this.selectedStaff = `${loggedInUser.firstName} ${loggedInUser.lastName}`;
+        }
+      },
+      error: (err) => console.error('User Load Error', err)
+    });
+  }
+
   onUntilChange() {
     this.data.showDatePicker = (this.data.untilDate === 'Pick Date');
   }
 
-onSubmit() {
-  // Construct the payload to match your MySQL table columns
-  const bookingPayload = {
-    room_name: this.roomName,
-    booking_date: this.selectedDate, // Ensure this is YYYY-MM-DD
-    period: this.data.period,
-    subject: this.data.department,
-    booked_by: this.selectedStaff,
-    booking_type: this.selectedType,
-    until_date: this.selectedType === 'Recurring' ? this.data.untilDate : null,
-    status: 'Confirmed'
-  };
+  onSubmit() {
+    const bookingPayload = {
+      room_name: this.roomName,
+      booking_date: this.selectedDate,
+      period: this.data.period,
+      subject: this.data.department,
+      booked_by: this.selectedStaff,
+      booking_type: this.selectedType,
+      until_date: this.selectedType === 'Recurring' ? this.data.untilDate : null,
+      status: 'Confirmed'
+    };
 
-  this.http.post('http://localhost:3000/api/bookings', bookingPayload).subscribe({
-    next: (res) => {
-      alert('Booking saved successfully!');
-      this.close.emit(); // Close modal
-      window.location.reload(); // Refresh to show on grid
-    },
-    error: (err) => {
-      console.error('Booking failed', err);
-      alert('Failed to save booking. Check console for details.');
-    }
-  });
-}
-
-  closeModal() {
-    this.close.emit();
+    this.http.post('http://localhost:3000/api/bookings', bookingPayload).subscribe({
+      next: (res) => {
+        alert('Booking saved successfully!');
+        this.close.emit();
+        window.location.reload(); 
+      },
+      error: (err) => {
+        console.error('Booking failed', err);
+        alert('Failed to save booking.');
+      }
+    });
   }
+
+  closeModal() { this.close.emit(); }
 }
