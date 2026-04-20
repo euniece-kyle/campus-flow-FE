@@ -28,7 +28,6 @@ loadAllBookings() {
     });
   }
 
-  // FIXED: Helper to get the actual logged-in user for the Booking Modal
   getCurrentUser() {
     const user = localStorage.getItem('currentUser');
     return user ? JSON.parse(user) : { firstName: 'Guest', lastName: '' };

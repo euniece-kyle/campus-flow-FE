@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RoomService } from '../../services/room.service';
@@ -36,6 +36,7 @@ export class DashboardComponent implements OnInit {
   private allSystemBookings: any[] = [];
   private roomService = inject(RoomService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
   // Map for Dynamic UI Color-Coding
   private buildingColorMap: { [key: string]: string } = {
     'SAC': '#f5a81c', 'NAC': '#4a0000', 'WAC': '#326284', 'EAC': '#E68D76'
@@ -86,11 +87,13 @@ export class DashboardComponent implements OnInit {
   constructor(public router: Router) {}
 
 ngOnInit(): void {
-    this.roomService.bookings$.subscribe((allBookings: any[]) => {
-      if (allBookings) {
+this.roomService.bookings$.subscribe((allBookings: any[]) => {
+      if (allBookings && allBookings.length >= 0) {
         this.allSystemBookings = allBookings;
         this.updateDashboardStats(allBookings);
         this.processDataByRange(this.currentDateRange);
+        // FIXED: Force Angular to recognize the new math values
+        this.cdr.detectChanges(); 
       }
     });
     this.roomService.loadAllBookings();
