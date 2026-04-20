@@ -63,36 +63,41 @@ export class BookingComponent implements OnInit {
 saveBooking() {
   const formValue = this.bookingForm.value;
   
-  if (!formValue.date) {
-    alert('Please select a valid date.');
+  const rawDate = formValue.date as any;
+  if (!rawDate) {
+    alert('Please select a date first.');
     return;
   }
 
-  const rawDateValue = formValue.date as any;
-  const selectedDate = new Date(rawDateValue).toISOString().split('T')[0];
+  const selectedDate = new Date(rawDate).toISOString().split('T')[0];
   const selectedRoom = formValue.room;
   const selectedPeriod = formValue.period;
 
+  console.log('Checking conflict for:', { selectedDate, selectedRoom, selectedPeriod });
+  console.log('Current Bookings in Memory:', this.roomService.allBookingsValue);
+
   const isOccupied = this.roomService.allBookingsValue.some((b: any) => {
-    const dbDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
+    const dbDate = b.booking_date.split('T')[0];
+    const match = dbDate === selectedDate && 
+                  b.room_name === selectedRoom && 
+                  b.period === selectedPeriod;
     
-    return dbDate === selectedDate && 
-           b.room_name === selectedRoom && 
-           b.period === selectedPeriod;
+    if (match) console.log('MATCH FOUND! Blocking booking.');
+    return match;
   });
 
   if (isOccupied) {
-    alert(`CONFLICT: ${selectedRoom} is already booked for Period ${selectedPeriod} on ${selectedDate}.`);
+    alert(`CONFLICT: ${selectedRoom} is already booked for ${selectedPeriod} on ${selectedDate}.`);
     return;
   }
 
   this.http.post('http://localhost:3000/api/bookings', formValue).subscribe({
     next: () => {
-      alert('Room booked successfully!');
+      alert('Booking saved successfully!');
       this.roomService.loadAllBookings();
       this.isModalOpen = false;
     },
-    error: (err) => alert('Server error: Could not save booking.')
+    error: (err) => alert('Server error: Could not save.')
   });
 }
 
