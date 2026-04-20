@@ -19,7 +19,6 @@ export class BookingComponent implements OnInit {
   selectedBuilding: string = 'SAC Building';
   selectedDate: Date = new Date();
   
-  // FIXED: [issue] Initialized as empty string to avoid "undefined" errors
   currentUserDisplayName: string = ''; 
   
   isModalOpen: boolean = false;
@@ -43,26 +42,19 @@ export class BookingComponent implements OnInit {
   constructor(public router: Router, private roomService: RoomService, private http: HttpClient) {}
 
   ngOnInit() {
-    this.refreshBookings();
     // FIXED: [issue] Line 42 - Added optional chaining to handle potential null user
     const user = this.roomService.getCurrentUser();
     this.currentUserDisplayName = `${user?.firstName || 'Guest'} ${user?.lastName || ''}`;
 
-    this.selectedDate.setHours(0,0,0,0);
-    this.roomService.bookings$.subscribe(data => {
+      this.roomService.bookings$.subscribe(data => {
       this.savedBookings = data;
+      this.bookedRooms = data; 
     });
     this.loadBookings();
   }
 
-  refreshBookings() {
-    this.http.get<any[]>('http://localhost:3000/api/bookings').subscribe({
-      next: (data) => {
-        this.bookedRooms = data;
-        // This ensures the grid updates immediately
-      },
-      error: (err) => console.error('Booking fetch failed', err)
-    });
+refreshBookings() {
+    this.roomService.loadAllBookings();
   }
 
   loadBookings() {
@@ -82,6 +74,26 @@ getBooking(room: string, periodLabel: string) {
     return b.room_name === room && b.period === periodLabel && dbDate === formattedDate;
   });
 }
+
+getBuildingStyle(roomName: string) {
+    const building = roomName.split(' ')[0]; 
+    const colors: { [key: string]: string } = {
+      'SAC': '#f5a81c', 
+      'NAC': '#4a0000', 
+      'WAC': '#326284', 
+      'EAC': '#E68D76'
+    };
+
+    return {
+      'background-color': colors[building] || '#e9e9e9',
+      'color': 'white',
+      'padding': '8px',
+      'border-radius': '6px',
+      'cursor': 'pointer',
+      'font-size': '0.85rem',
+      'text-align': 'center'
+    };
+  }
 
   onDateChange(event: any) {
     const val = event.target.value;
@@ -148,8 +160,7 @@ getBooking(room: string, periodLabel: string) {
   handleNewBooking(data: any) { this.loadBookings(); this.isModalOpen = false; }
   closeModal() { this.isModalOpen = false; }
   
-  onBookingCreated() {
-    this.refreshBookings();
+  onBookingCreated() { this.refreshBookings();
   }
 
   onSignOut() { 

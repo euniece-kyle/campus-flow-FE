@@ -124,16 +124,12 @@ ngOnInit(): void {
 
   // FIXED: Improved stat calculation to handle database nulls and date formats
   updateDashboardStats(allBookings: any[]): void {
-    const now = new Date();
-    // Formats date as YYYY-MM-DD to match MySQL
-    const today = this.formatDate(now);
-    
-    this.dailyTotal = allBookings.length;
-    
+    const today = this.formatDate(new Date());
+        
     this.todaysBookings = allBookings.filter(b => {
-if (!b.booking_date) return false;
-    const bDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
-    return bDate === today;
+      if (!b.booking_date) return false;
+      const bDate = b.booking_date.includes('T') ? b.booking_date.split('T')[0] : b.booking_date;
+      return bDate === today;
     });
 
     this.activeBookings = this.todaysBookings.length;

@@ -18,7 +18,8 @@ export class RoomService {
   loadAllBookings() {
     this.http.get<any[]>(this.apiUrl).subscribe({
       next: (data) => {
-        this.bookingsSubject.next(data);
+        const sortedData = data.sort((a, b) => new Date(a.booking_date).getTime() - new Date(b.booking_date).getTime());
+        this.bookingsSubject.next(sortedData);
       },
       error: (err) => console.error('Failed to load bookings from API', err)
     });
