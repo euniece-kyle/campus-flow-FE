@@ -33,12 +33,11 @@
         <span class="arrow-icon">▼</span>
       </div>
 
-      <label>Subject:</label>
-      <div class="form-value dropdown-wrapper">
-<select [(ngModel)]="data.department" name="department">
-  <option value="" disabled>Select Subject</option>
-  <option *ngFor="let s of subjects" [value]="s.name">{{ s.name }}</option>
-</select>
+      <label>Subject/Department</label>
+      <select [(ngModel)]="data.department" name="department">
+        <option value="" disabled selected>Select Subject</option>
+        <option *ngFor="let s of subjects" [value]="s.name">{{ s.name }}</option>
+      </select>
         <span class="arrow-icon">▼</span>
       </div>
 
@@ -80,4 +79,3 @@
       <button type="button" class="btn-create" (click)="onSubmit()">Create Booking</button>
     </div>
   </div>
-</div>
