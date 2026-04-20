@@ -63,7 +63,7 @@ getBooking(room: string, periodLabel: string) {
   return this.savedBookings.find(b => {
     if (!b.booking_date) return false;
     
-  const dbDate = b.booking_date.split('T')[0];
+const dbDate = b.booking_date.split('T')[0];
       
     return b.room_name === room && b.period === periodLabel && dbDate === formattedDate;
   });
