@@ -1,4 +1,23 @@
-@use "sass:color";
+@use "sass:color"; // Required for color.adjust
+
+.profile-container {
+    padding: 20px;
+    
+    .btn-edit {
+        background-color: #f39c12;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+
+        &:hover {
+            // Updated from darken() to color.adjust to fix deprecation
+            background-color: color.adjust(#f39c12, $lightness: -5%);
+        }
+    }
+}
 
 $maroon: #4a0000;
 $yellow-tab: #f5a81c;
@@ -267,6 +286,13 @@ $text-maroon: #5D1A1A;
   font-weight: bold;
 }
 
+.btn-edit {
+    background-color: #f39c12;
+    &:hover {
+        // Updated from darken() to color.adjust to fix deprecation warnings
+        background-color: color.adjust(#f39c12, $lightness: -5%);
+    }
+}
 // FIXED: Added btn-action-orange to match the buttons in Picture 1, 2, and 3
 .btn-action-orange {
   background-color: #f39c12;

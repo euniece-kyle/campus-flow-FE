@@ -13,7 +13,6 @@ import { HttpClient } from '@angular/common/http';
 export class CreateModal implements OnInit {
   @Input() roomName: string = '';
   @Input() selectedDate: string = '';
-  // FIXED: [error] Added missing Input to fix booking.html Line 68 error
   @Input() period: string = ''; 
   @Input() bookedBy: string = '';
   
@@ -24,6 +23,16 @@ export class CreateModal implements OnInit {
   subjects: any[] = [];
   staff: any[] = []; 
   selectedStaff: string = ''; 
+
+  // Re-added periods array to fix HTML template loop error
+  periods = [
+    { label: 'Period 1', time: '9:00am - 10:30am' },
+    { label: 'Period 2', time: '10:30am - 12:00nn' },
+    { label: 'LUNCH',    time: '12:00nn - 1:00pm' },
+    { label: 'Period 4', time: '1:00pm - 2:00pm' },
+    { label: 'Period 5', time: '2:30pm - 3:30pm' },
+    { label: 'Period 6', time: '3:30pm - 5:00pm' }
+  ];
 
   data: any = {
     period: '',
@@ -37,7 +46,6 @@ export class CreateModal implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    // FIXED: [logic] If a period was passed in from the grid, auto-select it
     if (this.period) {
       this.data.period = this.period;
     }
