@@ -8,13 +8,21 @@
     </div>
 
     <nav class="nav">
-      <div class="nav-item" routerLink="/booking" routerLinkActive="active">Booking</div>
-      <div class="nav-item" routerLink="/department" routerLinkActive="active">Subjects</div>
-      <div class="nav-item" routerLink="/dashboard" routerLinkActive="active">Dashboard</div>
-      <div class="nav-item" routerLink="/profile" routerLinkActive="active">Profile</div>
+      <div class="nav-item" routerLink="/booking" routerLinkActive="active">
+        Booking
+      </div>
+      <div class="nav-item" routerLink="/department" routerLinkActive="active">
+        Subjects
+      </div>
+      <div class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+        Dashboard <span class="arrow" *ngIf="router.url === '/dashboard'">></span>
+      </div>
+      <div class="nav-item" routerLink="/profile" routerLinkActive="active">
+        Profile
+      </div>
     </nav>
 
-    <div class="sign-out" (click)="onSignOut()">
+    <div class="sign-out" (click)="onSignOut()" style="cursor: pointer;">
       <div class="sign-out-content">
         <span class="exit-icon">🚪</span>
         <span class="sign-out-text">Sign Out</span>
@@ -24,8 +32,10 @@
 
   <main class="main">
     <header class="header">
-      <h1>Campus Dashboard</h1>
-      <p>Real-time overview of room utilization and bookings.</p>
+      <div class="header-left">
+        <h1>Campus Dashboard</h1>
+        <p>Real-time overview of room utilization and bookings.</p>
+      </div>
     </header>
 
     <div class="stats-grid">
@@ -41,7 +51,7 @@
         <h3>Total Subjects</h3>
         <p class="stat-value">{{ stats.totalSubjects }}</p>
       </div>
-      <div class="stat-card btn-list" (click)="toggleBookingList()">
+      <div class="stat-card btn-list" (click)="toggleBookingList()" style="cursor: pointer;">
         <h3>Live Booking Details</h3>
         <p class="stat-link">{{ isListVisible ? 'Hide List' : 'View List' }}</p>
       </div>
@@ -51,13 +61,21 @@
       <div class="chart-box">
         <h3>Booking Trends</h3>
         <div class="canvas-wrapper">
-          <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" [type]="'line'"></canvas>
+          <canvas baseChart 
+            [data]="lineChartData" 
+            [options]="lineChartOptions" 
+            [type]="'line'">
+          </canvas>
         </div>
       </div>
       <div class="chart-box">
         <h3>Building Distribution</h3>
         <div class="canvas-wrapper">
-          <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="'bar'"></canvas>
+          <canvas baseChart 
+            [data]="barChartData" 
+            [options]="barChartOptions" 
+            [type]="'bar'">
+          </canvas>
         </div>
       </div>
     </div>
@@ -69,7 +87,7 @@
           <button class="close-btn" (click)="toggleBookingList()">✕</button>
         </div>
         <div class="list-content">
-          <div *ngFor="let booking of todaysBookings" [ngStyle]="getBookingStyle(booking.room_name)">
+          <div *ngFor="let booking of todaysBookings" [ngStyle]="getBookingStyle(booking.room_name)" class="booking-item">
             <div class="info">
               <span class="room-num">{{ booking.room_name }}</span>
               <span class="subject-name">{{ booking.subject }}</span>

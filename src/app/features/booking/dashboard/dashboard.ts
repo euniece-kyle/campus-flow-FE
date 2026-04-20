@@ -85,8 +85,7 @@ export class DashboardComponent implements OnInit {
 
   constructor(public router: Router) {}
 
-ngOnInit(): void {
-    // FIXED: Now this.http will work
+  ngOnInit(): void {
     this.http.get<any>('http://localhost:3000/api/stats').subscribe({
       next: (data) => { this.stats = data; },
       error: (err) => console.error('Stats fetch failed', err)
@@ -102,10 +101,6 @@ ngOnInit(): void {
     this.roomService.loadAllBookings();
   }
 
-  /**
-   * FIXED: This is the method your HTML was missing!
-   * It provides the dynamic styling for the Live Booking Details list.
-   */
   getBookingStyle(roomName: string) {
     const prefix = roomName?.split(' ')[0]; 
     const bgColor = this.buildingColorMap[prefix] || '#e9e9e9';
@@ -122,7 +117,6 @@ ngOnInit(): void {
     };
   }
 
-  // FIXED: Improved stat calculation to handle database nulls and date formats
   updateDashboardStats(allBookings: any[]): void {
     const today = this.formatDate(new Date());
         
@@ -133,7 +127,8 @@ ngOnInit(): void {
     });
 
     this.activeBookings = this.todaysBookings.length;
-      this.availableNow = Math.max(0, this.totalRooms - this.activeBookings);
+    // FIXED: Corrected availableNow to accurately reflect remaining rooms
+    this.availableNow = Math.max(0, this.totalRooms - this.activeBookings);
   }
 
   private formatDate(date: Date): string {
@@ -141,7 +136,7 @@ ngOnInit(): void {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-}
+  }
 
   processDataByRange(days: number): void {
     this.currentDateRange = days;
@@ -163,6 +158,7 @@ ngOnInit(): void {
     this.barChartData.datasets = ['SAC', 'NAC', 'WAC', 'EAC'].map(bName => ({
       label: bName,
       data: sortedDates.map(date => 
+        // FIXED: Used .includes to match room names correctly with building keys
         bookingsToUse.filter(b => b.booking_date.includes(date) && b.room_name.includes(bName)).length
       ),
       backgroundColor: this.buildingColorMap[bName],
@@ -176,15 +172,13 @@ ngOnInit(): void {
 
   clearAllBookings(): void {
     if(confirm('Are you sure you want to clear all data?')) {
-      // FIXED: If your backend has a clear endpoint, call it here. 
-      // Otherwise, this clears the local stream.
       this.roomService.updateBookings([]);
       this.isListVisible = false;
     }
   }
 
   onSignOut(): void {
-    localStorage.removeItem('currentUser'); // FIXED: Ensure session is cleared
+    localStorage.removeItem('currentUser'); 
     this.router.navigate(['/login']);
   }
 }

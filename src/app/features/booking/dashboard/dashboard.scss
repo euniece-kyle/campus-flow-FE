@@ -24,6 +24,7 @@ $card-red-border: #e31e24;
     color: white;
     display: flex;
     flex-direction: column;
+    flex-shrink: 0; // FIXED: Prevents sidebar from shrinking
 
     .brand {
       padding: 20px;
@@ -42,6 +43,7 @@ $card-red-border: #e31e24;
       display: flex;
       flex-direction: column;
       background: $maroon !important;
+      flex-grow: 1; // FIXED: Ensures nav takes up available space
 
       .nav-item {
         padding: 15px 20px;
@@ -142,6 +144,32 @@ $card-red-border: #e31e24;
   }
 }
 
+// FIXED: Added necessary container styles for charts to render with height
+.charts-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 20px;
+  height: 400px; 
+
+  .chart-box {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    
+    h3 { margin-bottom: 20px; color: #444; font-size: 1.2rem; }
+    
+    .canvas-wrapper {
+      flex: 1;
+      position: relative;
+      min-height: 250px; // CRITICAL: Charts won't appear if parent height is 0
+    }
+  }
+}
+
 .details-panel {
   background: white;
   padding: 25px;
@@ -172,7 +200,10 @@ $card-red-border: #e31e24;
   to { opacity: 1; transform: translateY(0); }
 }
 
+@media (max-width: 1100px) { // FIXED: Adjusted breakpoint for better chart stacking
+  .charts-container { grid-template-columns: 1fr; height: auto; }
+}
+
 @media (max-width: 850px) {
-  .charts-grid { grid-template-columns: 1fr; }
   .main { padding: 20px; }
 }
