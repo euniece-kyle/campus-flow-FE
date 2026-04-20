@@ -59,11 +59,19 @@ refreshBookings() {
   }
 
 getBooking(room: string, periodLabel: string) {
-  const formattedDate = this.dateForInput; // This is YYYY-MM-DD
+  const formattedDate = this.dateForInput;
+
   return this.savedBookings.find(b => {
     if (!b.booking_date) return false;
-    const dbDate = b.booking_date.split('T')[0];
-    return b.room_name === room && b.period === periodLabel && dbDate === formattedDate;
+
+const dateObj = new Date(b.booking_date);
+    const dbDateOnly = dateObj.getFullYear() + '-' + 
+                       String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(dateObj.getDate()).padStart(2, '0');
+      
+    return b.room_name === room && 
+           b.period === periodLabel && 
+           dbDateOnly === formattedDate;
   });
 }
 
