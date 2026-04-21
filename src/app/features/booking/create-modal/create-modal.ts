@@ -26,7 +26,7 @@ export class CreateModal implements OnInit {
   data: any = {
     period: '',
     department: '', 
-    untilDate: 'Ending of session',
+    untilDate: '', // Changed from string to empty for date selection
     showDatePicker: false,
     startDate: '',
     customUntilDate: ''
@@ -70,6 +70,14 @@ ngOnInit() {
   }
 
 onSubmit() {
+  // LOGIC FIX: Ensure we send a valid date string, not the text "Ending of session"
+  let finalUntilDate = null;
+  
+  if (this.selectedType === 'Recurring') {
+      // If the user picked a custom date, use that; otherwise use untilDate
+      finalUntilDate = this.data.customUntilDate || this.data.untilDate;
+  }
+
   const bookingPayload = {
     room_name: this.roomName,
     booking_date: this.selectedDate,
@@ -77,20 +85,23 @@ onSubmit() {
     subject: this.data.department,
     booked_by: this.selectedStaff,
     booking_type: this.selectedType,
-    until_date: this.selectedType === 'Recurring' ? this.data.untilDate : null,
+    until_date: finalUntilDate, // Now sends an actual date string
     status: 'Confirmed'
   };
+
+  console.log('Sending Payload:', bookingPayload); // Debugging for your talk
 
   this.http.post('http://localhost:3000/api/bookings', bookingPayload).subscribe({
     next: (res) => {
       alert('Booking saved successfully!');
       this.create.emit(res);
       this.close.emit();
-      window.location.reload();
+      // Using a local data refresh is better, but reload works for the demo
+      window.location.reload(); 
     },
     error: (err) => {
       console.error('Booking failed', err);
-      alert('Failed to save booking. Check console for details.');
+      alert('Failed to save booking. Ensure all fields are filled.');
     }
   });
 }
